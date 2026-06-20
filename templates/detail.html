@@ -1,0 +1,689 @@
+{% extends "base.html" %}
+
+{% block title %}블루앵커 - 선사 상세 정보{% endblock %}
+
+{% block content %}
+<!-- Swiper CSS 및 달력(Flatpickr) CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
+
+<style>
+    .gallery-swiper .swiper-slide { width: auto; }
+    .hero-gradient { background: linear-gradient(to top, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.4)); }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    
+    /* 달력 커스텀 스타일 */
+    .flatpickr-calendar { font-family: 'Pretendard', sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important; border-radius: 16px !important; border: 1px solid #f1f5f9 !important; padding: 10px !important; z-index: 99999 !important; }
+    .flatpickr-day.selected { background: #2563eb !important; border-color: #2563eb !important; font-weight: bold; }
+    .flatpickr-day:hover { background: #eff6ff !important; border-color: #eff6ff !important; color: #2563eb; }
+</style>
+
+<main class="bg-slate-50 min-h-screen relative">
+    <!-- 1. 히어로 섹션 (배경 이미지 및 요약 정보) -->
+    <section class="relative h-[320px] md:h-[400px] flex items-end justify-center pb-10 overflow-hidden">
+        <img id="boatMainImage" src="" alt="선사 이미지" class="absolute inset-0 w-full h-full object-cover opacity-80">
+        <div class="absolute inset-0 hero-gradient"></div>
+        
+        <div class="relative z-10 max-w-7xl mx-auto w-full px-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mt-16 md:mt-0">
+            <div>
+                <div class="flex gap-2 mb-3">
+                    <span class="bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded shadow-sm">실시간 예약</span>
+                    <span id="boatLocationBadge" class="bg-slate-800/80 backdrop-blur text-white text-xs font-bold px-2.5 py-1 rounded shadow-sm border border-white/20">지역 로딩중...</span>
+                </div>
+                <h1 id="boatTitle" class="text-3xl md:text-5xl font-black text-white tracking-tight mb-3">선사 이름 로딩중...</h1>
+                <div class="flex items-center gap-3 text-slate-200 text-sm font-medium">
+                    <span id="boatSpec" class="flex items-center gap-1"><i class="fa-solid fa-anchor"></i> 제원 로딩중</span>
+                    <span class="w-1 h-1 bg-slate-400 rounded-full"></span>
+                    <span id="boatRating" class="flex items-center gap-1 text-amber-400 font-bold"><i class="fa-solid fa-star"></i> 평점 로딩중</span>
+                </div>
+            </div>
+            <button class="w-10 h-10 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center text-white hover:bg-rose-500 hover:border-rose-500 transition-colors shadow-lg">
+                <i class="fa-regular fa-heart text-xl mt-px"></i>
+            </button>
+        </div>
+    </section>
+
+    <!-- 2. 메인 2단 레이아웃 (좌:상세정보 / 우:예약폼) -->
+    <div class="max-w-7xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 w-full">
+        
+        <!-- 좌측 상세 콘텐츠 -->
+        <div class="flex-1 space-y-6">
+            
+            <!-- (1) 선사 소개 & 제원 -->
+            <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 md:p-8">
+                <h2 class="text-xl font-black text-slate-800 mb-4 tracking-tight">선사 소개</h2>
+                <p id="boatDescription" class="text-[15px] text-slate-600 leading-relaxed font-medium mb-8 break-keep">
+                    선사 소개 내용을 불러오는 중입니다...
+                </p>
+
+                <h3 class="text-[13px] font-bold text-slate-400 mb-3 tracking-wider">선박 제원</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 flex flex-col items-center text-center">
+                        <i class="fa-solid fa-ship text-slate-400 text-xl mb-2"></i>
+                        <span class="text-[11px] text-slate-500 font-bold mb-0.5">톤수</span>
+                        <span class="text-[14px] font-black text-slate-800">9.77t</span>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 flex flex-col items-center text-center">
+                        <i class="fa-solid fa-users text-slate-400 text-xl mb-2"></i>
+                        <span class="text-[11px] text-slate-500 font-bold mb-0.5">승선인원</span>
+                        <span class="text-[14px] font-black text-slate-800">22명 (선장포함)</span>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 flex flex-col items-center text-center">
+                        <i class="fa-solid fa-gauge-high text-slate-400 text-xl mb-2"></i>
+                        <span class="text-[11px] text-slate-500 font-bold mb-0.5">최대속력</span>
+                        <span class="text-[14px] font-black text-slate-800">20노트</span>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 flex flex-col items-center text-center">
+                        <i class="fa-solid fa-calendar-plus text-slate-400 text-xl mb-2"></i>
+                        <span class="text-[11px] text-slate-500 font-bold mb-0.5">건조년도</span>
+                        <span class="text-[14px] font-black text-slate-800">2022년형</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- (2) 편의 시설 -->
+            <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 md:p-8">
+                <h2 class="text-xl font-black text-slate-800 mb-5 tracking-tight flex items-center gap-2">
+                    <i class="fa-solid fa-check-circle text-blue-600"></i> 편의 시설 및 서비스
+                </h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-500 shadow-sm"><i class="fa-solid fa-restroom"></i></div>
+                        <span class="text-[14px] font-bold text-slate-700">수세식 화장실</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-500 shadow-sm"><i class="fa-solid fa-snowflake"></i></div>
+                        <span class="text-[14px] font-bold text-slate-700">에어컨/히터 휴게실</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-500 shadow-sm"><i class="fa-solid fa-mug-hot"></i></div>
+                        <span class="text-[14px] font-bold text-slate-700">컵라면/생수 무상</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-500 shadow-sm"><i class="fa-solid fa-fish-fins"></i></div>
+                        <span class="text-[14px] font-bold text-slate-700">장비 대여 (유료)</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-500 shadow-sm"><i class="fa-solid fa-plug"></i></div>
+                        <span class="text-[14px] font-bold text-slate-700">전동릴 전원</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-500 shadow-sm"><i class="fa-solid fa-bowl-food"></i></div>
+                        <span class="text-[14px] font-bold text-slate-700">점심 도시락 제공</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- (3) 조황 갤러리 스와이퍼 -->
+            <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 md:p-8 overflow-hidden">
+                <div class="flex justify-between items-end mb-5">
+                    <h2 class="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                        <i class="fa-solid fa-camera-retro text-blue-600"></i> 최근 조황 갤러리
+                    </h2>
+                    <span class="text-sm font-bold text-blue-600 cursor-pointer hover:text-blue-800" onclick="openGalleryModal()">더보기 <i class="fa-solid fa-chevron-right text-[11px]"></i></span>
+                </div>
+                
+                <div class="swiper gallery-swiper -mx-4 px-4 md:mx-0 md:px-0">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide w-[240px]">
+                            <div class="rounded-xl overflow-hidden relative group cursor-pointer" onclick="openGalleryModal()">
+                                <img src="https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?auto=format&fit=crop&q=80&w=400" class="w-full aspect-[4/5] object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent">
+                                    <span class="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mb-1 inline-block">1일 전</span>
+                                    <div class="text-white font-bold text-sm line-clamp-1">참돔 7짜 대물 달성!</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide w-[240px]">
+                            <div class="rounded-xl overflow-hidden relative group cursor-pointer" onclick="openGalleryModal()">
+                                <img src="https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&q=80&w=400" class="w-full aspect-[4/5] object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent">
+                                    <span class="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mb-1 inline-block">3일 전</span>
+                                    <div class="text-white font-bold text-sm line-clamp-1">오전 타작 광어 대풍년</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide w-[240px]">
+                            <div class="rounded-xl overflow-hidden relative group cursor-pointer" onclick="openGalleryModal()">
+                                <img src="https://images.unsplash.com/photo-1583416750470-965b2707b355?auto=format&fit=crop&q=80&w=400" class="w-full aspect-[4/5] object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent">
+                                    <span class="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold mb-1 inline-block">5일 전</span>
+                                    <div class="text-white font-bold text-sm line-clamp-1">우럭 쌍걸이 손맛 대박</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- (4) 실시간 해양 기상 정보 -->
+            <section class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-black text-slate-800"><i class="fa-solid fa-cloud-sun text-blue-500 mr-2"></i>실시간 해양 기상 정보</h2>
+                    <span class="text-xs text-slate-400">제공: 기상청 / 국립해양조사원</span>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 초단기 날씨 실황 -->
+                    <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex flex-col">
+                        <h3 class="text-[13px] font-bold text-slate-700 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-temperature-half text-rose-500"></i> 현재 날씨 <span class="text-[11px] text-slate-400 font-normal">(초단기실황)</span>
+                        </h3>
+                        <div id="weatherStatus" class="flex flex-col gap-2 min-h-[140px] flex-1 justify-center items-center text-slate-500 bg-white rounded-xl border border-slate-100 shadow-sm p-4">
+                            <i class="fa-solid fa-spinner fa-spin text-3xl text-blue-300 mb-2"></i>
+                            <span class="text-sm font-bold">기상 정보를 분석 중입니다...</span>
+                        </div>
+                    </div>
+
+                    <!-- 해양 기상 (조석/물때) -->
+                    <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex flex-col">
+                        <h3 class="text-[13px] font-bold text-slate-700 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-water text-blue-500"></i> 물때 <span class="text-[11px] text-slate-400 font-normal">(조석 정보)</span>
+                        </h3>
+                        <div id="marineStatus" class="flex flex-col gap-2 min-h-[140px] flex-1 justify-center items-center text-slate-500">
+                            <i class="fa-solid fa-spinner fa-spin text-3xl text-blue-300 mb-2"></i>
+                            <span class="text-sm font-bold">해양 정보를 분석 중입니다...</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- (5) 승선 후기 -->
+            <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 md:p-8">
+                <div class="flex justify-between items-end mb-6">
+                    <h2 class="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                        <i class="fa-solid fa-star text-amber-400"></i> 승선 후기
+                    </h2>
+                    <button onclick="openReviewModal()" class="text-[13px] font-bold bg-blue-50 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors border border-blue-100 flex items-center shadow-sm">
+                        <i class="fa-solid fa-pen mr-1.5"></i> 리뷰 쓰기
+                    </button>
+                </div>
+                
+                <div class="flex flex-col md:flex-row items-center gap-6 mb-8 bg-slate-50 p-6 rounded-xl border border-slate-100">
+                    <div class="text-center md:border-r border-slate-200 md:pr-8 shrink-0">
+                        <div class="text-4xl font-black text-slate-800 mb-1" id="avgRatingScore">4.9</div>
+                        <div class="text-amber-400 text-lg mb-1"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                        <div class="text-[12px] font-bold text-slate-400"><span id="totalReviewCount">128</span>개의 리뷰</div>
+                    </div>
+                    <div class="flex-1 w-full flex flex-wrap gap-2">
+                        <span class="bg-white border border-slate-200 px-3 py-1.5 rounded-full text-[13px] font-bold text-slate-600 shadow-sm">👍 선장님이 친절해요 (89)</span>
+                        <span class="bg-white border border-slate-200 px-3 py-1.5 rounded-full text-[13px] font-bold text-slate-600 shadow-sm">🚽 화장실이 깨끗해요 (72)</span>
+                        <span class="bg-white border border-slate-200 px-3 py-1.5 rounded-full text-[13px] font-bold text-slate-600 shadow-sm">🎣 포인트를 잘 알아요 (65)</span>
+                        <span class="bg-white border border-slate-200 px-3 py-1.5 rounded-full text-[13px] font-bold text-slate-600 shadow-sm">🔰 초보에게 추천해요 (41)</span>
+                    </div>
+                </div>
+
+                <div class="space-y-6" id="reviewList">
+                    <div class="border-b border-slate-100 pb-6 animate-fade-in">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-full h-full"></div>
+                            <div>
+                                <div class="text-[14px] font-bold text-slate-800">김*조 조사님</div>
+                                <div class="text-[11px] text-slate-400">2023. 10. 15 · 참돔 타이라바 이용</div>
+                            </div>
+                            <div class="ml-auto text-amber-400 text-xs font-bold"><i class="fa-solid fa-star"></i> 5.0</div>
+                        </div>
+                        <p class="text-[14px] text-slate-600 font-medium leading-relaxed">
+                            초보라서 걱정 많이 했는데 선장님이 사무장님처럼 돌아다니시면서 줄 엉킨것도 다 풀어주시고 액션 주는 법도 알려주셔서 첫 참돔 손맛 제대로 봤습니다! 배도 엄청 깨끗해서 와이프도 좋아하네요. 다음 달에 또 예약하겠습니다.
+                        </p>
+                    </div>
+                </div>
+                <div class="pt-6">
+                    <button id="btnLoadMoreReviews" onclick="loadMoreReviews()" class="w-full py-3.5 rounded-xl border border-slate-200 text-[14px] font-bold text-slate-600 hover:bg-slate-50 transition-colors shadow-sm">리뷰 더보기</button>
+                </div>
+            </section>
+
+            <!-- (6) 오시는 길 및 규정 (카카오맵 연동 적용) -->
+            <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 md:p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- 준비물 및 안내사항 -->
+                    <div>
+                        <h2 class="text-lg font-black text-slate-800 mb-4 tracking-tight flex items-center gap-2">
+                            <i class="fa-solid fa-clipboard-list text-blue-600"></i> 출조 준비물 & 규정
+                        </h2>
+                        <ul class="space-y-3 text-[14px] text-slate-600 font-medium">
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-rose-500 mt-1"></i>
+                                <span><strong class="text-rose-500 text-[15px]">신분증 필수 지참</strong> (미지참 시 승선 절대 불가)</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-blue-500 mt-1"></i>
+                                <span>구명조끼 (배에 비치되어 있으나 개인용 지참 권장)</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-ban text-slate-400 mt-1"></i>
+                                <span>선내 음주 절대 금지 (해경 단속 시 과태료 부과)</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 오시는 길 -->
+                    <div>
+                        <h2 class="text-lg font-black text-slate-800 mb-4 tracking-tight flex items-center gap-2">
+                            <i class="fa-solid fa-location-dot text-blue-600"></i> 오시는 길
+                        </h2>
+                        
+                        <!-- 💡 카카오맵 컨테이너 -->
+                        <div id="mapContainer" class="bg-slate-100 w-full h-48 rounded-xl mb-4 flex items-center justify-center border border-slate-200 overflow-hidden relative shadow-inner z-0">
+                            <i class="fa-solid fa-spinner fa-spin text-blue-500 text-2xl"></i>
+                        </div>
+                        
+                        <div class="text-[13px] text-slate-600 font-medium space-y-1.5">
+                            <p><strong class="text-slate-800">주소:</strong> <span id="mapAddressText">충남 보령시 오천항 123-4</span></p>
+                            <p><strong class="text-slate-800">주차:</strong> 매장 앞 공영 주차장 무료 이용</p>
+                            <p class="text-rose-500 text-[12px]">* 출항 30분 전까지 매장에 도착하여 승선 명부를 작성해 주세요.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- 💡 우측 예약 패널 (커스텀 달력, 인원수 가격 연동 완료) -->
+        <div class="lg:col-span-1">
+            <div class="sticky top-24 bg-white rounded-3xl p-6 shadow-xl border border-slate-100 z-10">
+                <div class="mb-6 flex justify-between items-end">
+                    <div>
+                        <span class="text-slate-500 text-sm font-bold" id="priceLabel">1인 대여 기준</span>
+                        <div class="text-3xl font-black text-slate-900 mt-1">
+                            <span id="boatPrice">로딩중</span><span class="text-lg font-bold ml-1 text-slate-600">원</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4 mb-6">
+                    <div class="p-4 border border-slate-200 rounded-2xl hover:border-blue-400 transition-colors relative group">
+                        <label class="block text-xs font-bold text-slate-400 mb-2 cursor-pointer" for="reserveDate">출조일 선택</label>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-regular fa-calendar text-blue-500"></i>
+                            <!-- 💡 Flatpickr 달력이 적용될 input -->
+                            <input type="text" id="reserveDate" placeholder="날짜를 선택하세요" class="w-full text-slate-800 font-bold outline-none bg-transparent cursor-pointer">
+                            <i class="fa-solid fa-chevron-down text-slate-300 text-[10px]"></i>
+                        </div>
+                    </div>
+                    <div class="p-4 border border-slate-200 rounded-2xl flex justify-between items-center">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">예약 인원</label>
+                            <span class="text-slate-800 font-bold" id="reserveGuestLabel">1명</span>
+                        </div>
+                        <!-- 인원 조절 버튼 (클릭 시 가격 계산) -->
+                        <div class="flex items-center gap-3">
+                            <button type="button" onclick="changeReserveGuest(-1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 hover:text-blue-600 transition-colors"><i class="fa-solid fa-minus"></i></button>
+                            <span class="font-bold w-4 text-center text-lg" id="reserveGuestCount">1</span>
+                            <button type="button" onclick="changeReserveGuest(1)" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 hover:text-blue-600 transition-colors"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="submitReservation()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black text-lg py-4 rounded-2xl transition-all shadow-md hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                    <i class="fa-regular fa-credit-card"></i> 실시간 예약하기
+                </button>
+                <p class="text-center text-[11px] text-slate-400 mt-4 font-medium">예약 확정 전에는 결제되지 않습니다.</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- =========================================================================
+     🎯 각종 팝업 모달 (리뷰 쓰기 & 갤러리 더보기)
+========================================================================== -->
+
+<!-- 1. 리뷰 쓰기 모달 -->
+<div id="reviewModal" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300">
+    <div class="bg-white w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl relative animate-fade-in">
+        <div class="border-b border-slate-100 px-6 py-4 flex justify-between items-center">
+            <h2 class="text-lg font-black text-slate-800">승선 후기 작성</h2>
+            <button type="button" onclick="closeReviewModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <div class="p-6">
+            <div class="mb-4 text-center">
+                <p class="text-sm font-bold text-slate-500 mb-2">선장님과 배 시설은 어떠셨나요?</p>
+                <div class="flex justify-center gap-2 text-3xl text-amber-400 cursor-pointer">
+                    <i class="fa-solid fa-star hover:scale-110 transition-transform"></i>
+                    <i class="fa-solid fa-star hover:scale-110 transition-transform"></i>
+                    <i class="fa-solid fa-star hover:scale-110 transition-transform"></i>
+                    <i class="fa-solid fa-star hover:scale-110 transition-transform"></i>
+                    <i class="fa-solid fa-star hover:scale-110 transition-transform"></i>
+                </div>
+            </div>
+            <textarea id="reviewText" rows="4" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 transition-colors resize-none mb-4" placeholder="다음 낚시꾼들을 위해 생생한 후기를 남겨주세요! (최소 10자 이상)"></textarea>
+            <button onclick="submitReview()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors">후기 등록하기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 2. 조황 갤러리 더보기 모달 -->
+<div id="galleryModal" class="hidden fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300">
+    <div class="w-full max-w-5xl h-[85vh] flex flex-col relative">
+        <div class="flex justify-between items-center mb-4 shrink-0">
+            <h2 class="text-white text-xl font-black flex items-center gap-2"><i class="fa-solid fa-camera-retro"></i> 선사 조황 갤러리 전체보기</h2>
+            <button type="button" onclick="closeGalleryModal()" class="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+        <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <img src="https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?auto=format&fit=crop&q=80&w=400" class="w-full aspect-square object-cover rounded-xl border border-white/10">
+                <img src="https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&q=80&w=400" class="w-full aspect-square object-cover rounded-xl border border-white/10">
+                <img src="https://images.unsplash.com/photo-1583416750470-965b2707b355?auto=format&fit=crop&q=80&w=400" class="w-full aspect-square object-cover rounded-xl border border-white/10">
+                <img src="https://images.unsplash.com/photo-1544329621-e00eb2c300ea?auto=format&fit=crop&q=80&w=400" class="w-full aspect-square object-cover rounded-xl border border-white/10">
+                <img src="https://images.unsplash.com/photo-1533261968817-063a8a3854eb?auto=format&fit=crop&q=80&w=400" class="w-full aspect-square object-cover rounded-xl border border-white/10">
+                <img src="https://images.unsplash.com/photo-1517409205562-b13c32d4cb05?auto=format&fit=crop&q=80&w=400" class="w-full aspect-square object-cover rounded-xl border border-white/10">
+                <div class="w-full aspect-square rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center text-white/50">
+                    <i class="fa-regular fa-images text-3xl mb-2"></i>
+                    <span class="text-sm font-bold">더 많은 사진 없음</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     🔥 백엔드(FastAPI) 연동, 커스텀 달력, 예약 로직 스크립트 🔥
+========================================================================== -->
+<!-- Swiper, Flatpickr 라이브러리 및 카카오맵 -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
+<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=a714ae769d5f24681437f90a8c5c326f&libraries=services&autoload=false"></script>
+
+<script>
+    // 전역 변수 세팅 (예약 금액 계산용)
+    let unitPrice = 0;
+    let reserveGuestCount = 1;
+    let maxGuestCapacity = 22; // 배의 최대 정원
+
+    // 갤러리 스와이퍼 활성화
+    if(typeof Swiper !== 'undefined') {
+        new Swiper('.gallery-swiper', { slidesPerView: 'auto', spaceBetween: 12, freeMode: true });
+    }
+
+    // 💡 달력(Flatpickr) 초기화 및 UI 연동
+    document.addEventListener("DOMContentLoaded", () => {
+        flatpickr("#reserveDate", {
+            locale: "ko", 
+            minDate: "today", 
+            defaultDate: "today", 
+            dateFormat: "Y. m. d. (D)", 
+            disableMobile: true,
+            appendTo: document.body // 💡 달력 잘림 방지 (body 최상단에 띄움)
+        });
+    });
+
+    // 예약 인원 변경 함수
+    function changeReserveGuest(delta) {
+        reserveGuestCount += delta;
+        if (reserveGuestCount < 1) reserveGuestCount = 1;
+        if (reserveGuestCount > maxGuestCapacity) {
+            reserveGuestCount = maxGuestCapacity;
+            alert(`선택하신 배의 최대 승선 인원은 ${maxGuestCapacity}명입니다.`);
+        }
+        
+        document.getElementById('reserveGuestCount').innerText = reserveGuestCount;
+        document.getElementById('reserveGuestLabel').innerText = reserveGuestCount + "명";
+        
+        const totalPrice = unitPrice * reserveGuestCount;
+        document.getElementById('boatPrice').innerText = totalPrice.toLocaleString();
+        
+        const priceLabel = document.getElementById('priceLabel');
+        if (reserveGuestCount > 1) {
+            priceLabel.innerText = `총 결제 예정 금액 (${reserveGuestCount}명)`;
+            priceLabel.classList.add('text-blue-600');
+        } else {
+            priceLabel.innerText = `1인 대여 기준`;
+            priceLabel.classList.remove('text-blue-600');
+        }
+    }
+
+    // 💡 결제 페이지로 데이터 전달 및 이동
+    function submitReservation() {
+        const selectedDate = document.getElementById('reserveDate').value;
+        const total = unitPrice * reserveGuestCount;
+        
+        // 결제 페이지로 넘길 예약 데이터 저장 (sessionStorage 활용)
+        const bookingData = {
+            boatName: document.getElementById('boatTitle').innerText,
+            boatSpec: document.getElementById('boatSpec').innerText,
+            date: selectedDate,
+            guests: reserveGuestCount,
+            totalPrice: total,
+            imgUrl: document.getElementById('boatMainImage').src
+        };
+        sessionStorage.setItem('currentBooking', JSON.stringify(bookingData));
+        
+        // 결제 페이지로 이동
+        location.href = 'payment.html';
+    }
+
+    function openReviewModal() { document.getElementById('reviewModal').classList.remove('hidden'); document.getElementById('reviewText').value = ''; }
+    function closeReviewModal() { document.getElementById('reviewModal').classList.add('hidden'); }
+    function submitReview() {
+        const text = document.getElementById('reviewText').value;
+        if(text.length < 10) { alert('최소 10자 이상 정성스러운 후기를 남겨주세요!'); return; }
+        
+        const reviewList = document.getElementById('reviewList');
+        const newReview = `
+            <div class="border-b border-slate-100 pb-6 pt-6 animate-fade-in bg-blue-50/30 -mx-6 px-6">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 overflow-hidden flex items-center justify-center text-blue-500 font-bold"><i class="fa-solid fa-user"></i></div>
+                    <div>
+                        <div class="text-[14px] font-bold text-blue-700">방금 등록한 나</div>
+                        <div class="text-[11px] text-slate-400">방금 전 · 앱 결제 완료</div>
+                    </div>
+                    <div class="ml-auto text-amber-400 text-xs font-bold"><i class="fa-solid fa-star"></i> 5.0</div>
+                </div>
+                <p class="text-[14px] text-slate-700 font-bold leading-relaxed">${text}</p>
+            </div>
+        `;
+        reviewList.insertAdjacentHTML('afterbegin', newReview);
+        
+        let totalCount = parseInt(document.getElementById('totalReviewCount').innerText);
+        document.getElementById('totalReviewCount').innerText = totalCount + 1;
+        
+        closeReviewModal();
+        alert('소중한 후기가 등록되었습니다. 감사합니다!');
+    }
+
+    function loadMoreReviews() {
+        const btn = document.getElementById('btnLoadMoreReviews');
+        const reviewList = document.getElementById('reviewList');
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 불러오는 중...`;
+        
+        setTimeout(() => {
+            const moreReviews = `
+                <div class="border-b border-slate-100 pb-6 pt-6 animate-fade-in">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Annie" class="w-full h-full"></div>
+                        <div>
+                            <div class="text-[14px] font-bold text-slate-800">이*현 조사님</div>
+                            <div class="text-[11px] text-slate-400">2023. 10. 10 · 광어 다운샷 이용</div>
+                        </div>
+                        <div class="ml-auto text-amber-400 text-xs font-bold"><i class="fa-solid fa-star"></i> 4.5</div>
+                    </div>
+                    <p class="text-[14px] text-slate-600 font-medium leading-relaxed">바다가 조금 안 좋았는데 선장님이 끝까지 남아서 한 마리라도 더 잡게 해주시려고 노력하는 모습이 감동이었습니다. 장비 대여도 깔끔하네요.</p>
+                </div>
+            `;
+            reviewList.insertAdjacentHTML('beforeend', moreReviews);
+            btn.innerHTML = `리뷰 더 이상 없음`;
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+        }, 600);
+    }
+
+    function openGalleryModal() { document.getElementById('galleryModal').classList.remove('hidden'); }
+    function closeGalleryModal() { document.getElementById('galleryModal').classList.add('hidden'); }
+
+    // DOM 로드 완료 후 데이터 초기화 및 API 호출
+    document.addEventListener("DOMContentLoaded", async () => {
+        // 1. URL에서 boat_id 추출
+        const pathSegments = window.location.pathname.split('/');
+        const boatIdParam = pathSegments[pathSegments.length - 1]; 
+        
+        // 💡 전국 모든 더미 선사 완벽 매핑 (하드코딩 폴백 해결!)
+        const mockBoats = {
+            "1": { name: "블루오션호", loc: "충남 보령시", spec: "9.77t / 22명", price: "150000", max: 22, img: "https://images.unsplash.com/photo-1544329621-e00eb2c300ea", desc: "서해안 최고의 포인트만 공략하는 베테랑 선장님! 초보자도 쉽게 낚시를 즐길 수 있도록 1:1 맞춤 지도를 해드립니다." },
+            "2": { name: "에이스마스터호", loc: "인천 남항", spec: "7.31t / 18명", price: "100000", max: 18, img: "https://images.unsplash.com/photo-1533261968817-063a8a3854eb", desc: "수도권에서 가장 접근성이 좋은 인천 남항 출항. 쾌적한 실내 공간과 최신식 어군 탐지기를 보유하고 있습니다." },
+            "3": { name: "레전드피싱호", loc: "전북 군산시", spec: "9.77t / 20명", price: "140000", max: 20, img: "https://images.unsplash.com/photo-1517409205562-b13c32d4cb05", desc: "참돔 타이라바 전문! 매 시즌 짜릿한 손맛을 보장합니다. 깨끗한 화장실과 휴게실 완비." },
+            "4": { name: "제주 어신호", loc: "제주 제주시", spec: "9.77t / 16명", price: "150000", max: 16, img: "https://images.unsplash.com/photo-1615092296061-e2ccbf2f41cc", desc: "한치 야간 낚시와 무늬오징어 팁런 전문! 초보자도 쉽게 낚시를 즐길 수 있도록 지도해 드립니다." },
+            "5": { name: "강릉 포세이돈", loc: "강원 강릉시", spec: "7.93t / 16명", price: "80000", max: 16, img: "https://images.unsplash.com/photo-1506452843477-80be406322b7", desc: "동해바다 대구, 가자미, 문어 낚시 전문 선사입니다. 넓은 선상 공간으로 편안한 낚시가 가능합니다." },
+            "6": { name: "통영 몬스터호", loc: "경남 통영시", spec: "9.77t / 20명", price: "120000", max: 20, img: "https://images.unsplash.com/photo-1517409205562-b13c32d4cb05", desc: "남해안 몬스터 무늬오징어를 찾아서! 야간 출항 전문. 짜릿한 손맛을 원하신다면 몬스터호와 함께하세요." },
+            "7": { name: "녹동 빅토리호", loc: "전남 고흥군", spec: "5.00t / 12명", price: "100000", max: 12, img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647", desc: "소수 정예 독배 전문. 쾌적한 낚시 환경을 제공하며 전투 낚시를 즐기시는 분들께 적극 추천합니다." },
+            "8": { name: "태안 드래곤피싱", loc: "충남 태안군", spec: "7.31t / 16명", price: "90000", max: 16, img: "https://images.unsplash.com/photo-1544329621-e00eb2c300ea", desc: "주꾸미, 갑오징어 조황 1위! 에기 무료 제공 이벤트 중입니다. 가족 단위 초보자분들도 대환영입니다." }
+        };
+
+        // 기본값 1번 배, 매칭되면 해당 배 적용
+        const boat = mockBoats[boatIdParam] || mockBoats["1"]; 
+
+        unitPrice = parseInt(boat.price);
+        maxGuestCapacity = boat.max;
+
+        document.getElementById("boatTitle").innerText = boat.name;
+        document.getElementById("boatLocationBadge").innerText = boat.loc;
+        document.getElementById("boatSpec").innerHTML = `<i class="fa-solid fa-anchor mr-1"></i> ${boat.spec}`;
+        document.getElementById("boatPrice").innerText = unitPrice.toLocaleString();
+        document.getElementById("boatDescription").innerText = boat.desc;
+        document.getElementById("boatMainImage").src = `${boat.img}?auto=format&fit=crop&w=1920&q=80`;
+        document.getElementById("boatRating").innerHTML = `<i class="fa-solid fa-star text-amber-400 mr-1"></i> 4.${Math.floor(Math.random() * 5) + 5} (리뷰 ${Math.floor(Math.random() * 200) + 50}개)`;
+
+        // 💡 전국 지도 연동 (카카오맵 주소 완벽 매핑)
+        const mapLocationMap = { 
+            "충남 보령시": "충남 보령시 오천항", 
+            "인천 남항": "인천 중구 남항부두",
+            "전북 군산시": "전북 군산시 비응항",
+            "제주 제주시": "제주시 도두항",
+            "강원 강릉시": "강원 강릉시 강릉항",
+            "경남 통영시": "경남 통영시 통영항",
+            "전남 고흥군": "전남 고흥군 녹동항",
+            "충남 태안군": "충남 태안군 안흥항"
+        };
+        const searchAddress = mapLocationMap[boat.loc] || "충남 보령시 오천항";
+        document.getElementById("mapAddressText").innerText = searchAddress;
+        
+        const mapContainer = document.getElementById("mapContainer");
+        if (typeof kakao !== 'undefined' && kakao.maps) {
+            kakao.maps.load(function() {
+                try {
+                    const ps = new kakao.maps.services.Places(); 
+                    ps.keywordSearch(searchAddress, function(data, status) {
+                        mapContainer.innerHTML = ''; 
+                        if (status === kakao.maps.services.Status.OK) {
+                            const coords = new kakao.maps.LatLng(data[0].y, data[0].x);
+                            const map = new kakao.maps.Map(mapContainer, { center: coords, level: 3 });
+                            new kakao.maps.Marker({ map: map, position: coords });
+                        } else {
+                            mapContainer.innerHTML = '<span class="text-xs text-slate-500 font-bold">지도 위치를 찾을 수 없습니다.</span>';
+                        }
+                    });
+                } catch (e) {
+                    mapContainer.innerHTML = '<span class="text-xs text-rose-500 font-bold text-center px-4">카카오맵 설정 오류<br>(도메인 미등록 또는 키 오류)</span>';
+                }
+            });
+        }
+
+        // 💡 전국 기상청 및 해양 API 병렬 패치용 코드 매핑
+        const locationApiMap = { 
+            "충남 보령시": { region: "보령", obsCode: "DT_0025" }, 
+            "인천 남항": { region: "인천", obsCode: "DT_0001" },
+            "전북 군산시": { region: "군산", obsCode: "DT_0018" },
+            "제주 제주시": { region: "제주", obsCode: "DT_0004" },
+            "강원 강릉시": { region: "강릉", obsCode: "DT_0012" },
+            "경남 통영시": { region: "통영", obsCode: "DT_0014" },
+            "전남 고흥군": { region: "고흥", obsCode: "DT_0016" },
+            "충남 태안군": { region: "태안", obsCode: "DT_0026" }
+        };
+        const coords = locationApiMap[boat.loc] || locationApiMap["충남 보령시"];
+        const baseDate = `${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}`;
+
+        try {
+            const API_BASE_URL = window.location.origin.includes('localhost') ? 'http://127.0.0.1:8000' : '';
+            
+            // 🔥 프론트엔드 캐시 무시(no-store) 설정 추가로 언제나 최신 데이터 요청
+            const fetchOptions = { cache: 'no-store' };
+
+            const [weatherRes, dailyRes, realtimeRes] = await Promise.all([
+                fetch(`${API_BASE_URL}/api/weather/hourly?region=${encodeURIComponent(coords.region)}`, fetchOptions),
+                fetch(`${API_BASE_URL}/api/daily-data?obs_code=${coords.obsCode}&date_str=${baseDate}`, fetchOptions),
+                fetch(`${API_BASE_URL}/api/realtime-marine?obs_code=${coords.obsCode}&date_str=${baseDate}`, fetchOptions)
+            ]);
+
+            if (weatherRes.ok) renderWeather(await weatherRes.json());
+            if (dailyRes.ok) renderMarine(await dailyRes.json(), realtimeRes.ok ? await realtimeRes.json() : null);
+
+        } catch (error) {
+            console.error("API 통신 에러");
+        }
+    });
+
+    // 날씨 렌더링
+    function renderWeather(data) {
+        const container = document.getElementById("weatherStatus");
+        if (!Array.isArray(data) || data.length === 0) return;
+
+        const nowHr = new Date().getHours();
+        let current = data.find(d => parseInt(d.time.split(':')[0]) >= nowHr) || data[data.length-1];
+
+        let iconHtml = '<i class="fa-solid fa-sun text-5xl text-rose-400 mb-3"></i>';
+        let statusText = "맑음";
+        if (current.pty !== "0") { iconHtml = '<i class="fa-solid fa-cloud-showers-water text-5xl text-blue-500 mb-3"></i>'; statusText = "비/눈"; } 
+        else if (current.sky === "3" || current.sky === "4") { iconHtml = '<i class="fa-solid fa-cloud text-5xl text-slate-400 mb-3"></i>'; statusText = "흐림/구름많음"; }
+
+        container.innerHTML = `
+            ${iconHtml}
+            <div class="text-3xl font-black text-slate-800">${current.tmp}℃</div>
+            <div class="text-[13px] font-bold text-slate-500 mb-3">${statusText} (강수 ${current.pcp}mm)</div>
+            <div class="mt-auto w-full flex justify-center gap-3">
+                 <span class="text-[11px] text-slate-600 bg-white border border-slate-200 px-3 py-1 rounded-full font-bold shadow-sm">풍속: ${current.wsd}m/s</span>
+                 <span class="text-[11px] text-slate-600 bg-white border border-slate-200 px-3 py-1 rounded-full font-bold shadow-sm">파고: ${current.wav}m</span>
+            </div>
+            <div class="text-[10px] text-slate-400 mt-2 font-medium"><i class="fa-regular fa-clock"></i> ${current.time} 기준 동네예보</div>
+        `;
+    }
+
+    // 💡 해양(조석/물때) 렌더링
+    function renderMarine(dailyData, rtData) {
+        const container = document.getElementById("marineStatus");
+        let peaks = Array.isArray(dailyData.peaks) && dailyData.peaks.length > 0 ? dailyData.peaks : [
+            { tphlSe: '고조', tph_time: '04:15', tph_level: '650' }, { tphlSe: '저조', tph_time: '10:45', tph_level: '120' }
+        ];
+        
+        let tideHtml = '';
+        peaks.slice(0, 3).forEach(p => {
+             const tm = (p.predcDt || p.tph_time || p.tphl_time || '').substring(11, 16) || '00:00';
+             const hgt = p.predcTdlvVl || p.tph_level || p.tphl_lvl || '-';
+             
+             // 🔥 다양한 형태의 '고조' 코드를 모두 안전하게 감지
+             const tyCode = String(p.extrSe || p.hl_code || p.tphlSe || '').trim().toUpperCase();
+             const isHigh = ['고조', '고', 'H', '1', '3'].includes(tyCode);
+             const typeStr = isHigh ? '<span class="text-[13px] font-bold text-rose-500">▲ 고조</span>' : '<span class="text-[13px] font-bold text-blue-500">▼ 저조</span>';
+             
+             tideHtml += `
+                 <div class="flex items-center justify-between w-full px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 mb-2">
+                    ${typeStr}
+                    <span class="text-[15px] font-black text-slate-700">${tm} <span class="text-slate-400 text-[12px] font-bold ml-1">(${hgt}cm)</span></span>
+                </div>
+             `;
+        });
+        
+        // 🔥 수온 데이터 방어 및 실측/미관측 분기
+        const isValidTemp = rtData && rtData.waterTemp && rtData.waterTemp !== "-" && rtData.waterTemp.trim() !== "";
+        const wtDisplay = isValidTemp ? rtData.waterTemp + "℃" : "- ℃";
+        
+        const wtLabel = isValidTemp 
+            ? `<span class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-[10px] font-bold mr-1 border border-blue-100">실측</span>`
+            : `<span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[10px] font-bold mr-1 border border-slate-200" title="현재 통신 오류 또는 관측소가 없어 수온을 불러오지 못했습니다.">미관측</span>`;
+
+        container.innerHTML = `
+            <div class="w-full flex-1 flex flex-col justify-center">${tideHtml}</div>
+            <div class="mt-auto w-full pt-3 flex justify-between items-center px-1 border-t border-slate-200 border-dashed">
+                <span class="text-[13px] font-bold text-slate-600 flex items-center"><i class="fa-solid fa-droplet text-cyan-500 mr-1.5"></i> ${wtLabel} 현재 수온</span>
+                <span class="text-[16px] font-black text-cyan-600">${wtDisplay}</span>
+            </div>
+        `;
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,171 @@
+@charset "utf-8";
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css");
+
+/* =========================================
+🌞 기본 폰트 및 라이트 모드 고정
+========================================= */
+:root {
+  /* 테마 컬러를 변수로 관리하면 나중에 색상 변경이 훨씬 쉽습니다. */
+  --primary-color: #4f46e5;
+  --primary-hover: #4338ca;
+  --bg-color: #f8fafc;
+  --text-color: #1e293b;
+  --border-color: #e2e8f0;
+}
+
+html, body {
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; /* fallback 폰트 추가 */
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+  color-scheme: light; /* 스마트폰 강제 다크모드 방지 (보통 !important 없이도 작동합니다) */
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased; /* iOS 텍스트 렌더링 부드럽게 */
+}
+
+/* =========================================
+📱 1. 모바일 스와이프 및 스크롤바 최적화
+========================================= */
+.smooth-scroll { 
+  scroll-behavior: smooth; 
+}
+
+/* 가로 스크롤바 숨기기 (모바일 카드 넘기기용) */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* 얇고 예쁜 커스텀 스크롤바 (PC 차트 영역용) */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { 
+  background-color: #cbd5e1; 
+  border-radius: 10px; 
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8; /* 마우스 오버 시 살짝 진하게 */
+}
+
+/* =========================================
+✨ 2. 차트 & 슬라이더 (UI 디테일)
+========================================= */
+/* 차트 높이 유연성 부여 (최소 높이 보장) */
+.chart-wrapper { 
+  height: 280px; 
+  min-height: 280px; 
+  position: relative; 
+}
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.chart-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0; height: 40px;
+  background: linear-gradient(to bottom, transparent, var(--bg-color)); /* 배경색과 일치하게 수정 */
+  pointer-events: none;
+}
+
+/* Swiper 페이지네이션 프리미엄 커스텀 닷 */
+.swiper-pagination-bullet {
+  width: 8px; /* 조금 더 세련된 느낌을 위해 약간 줄임 */
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.45) !important;
+  opacity: 1 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 9999px;
+}
+.swiper-pagination-bullet-active {
+  width: 24px !important;
+  background-color: #ffffff !important;
+}
+
+/* =========================================
+🔍 3. UI 요소: 달력 및 검색 모달
+========================================= */
+/* 공통 액티브 색상 (CSS 변수 활용) */
+.btn-active {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+}
+
+/* 달력 레이아웃 */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  width: 100%;
+}
+.calendar-header {
+  font-weight: 700; 
+  color: #94a3b8; 
+  font-size: 13px;
+  padding-bottom: 8px; 
+  text-align: center;
+  border-bottom: 1px solid var(--border-color); 
+  margin-bottom: 8px;
+}
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+  color: var(--text-color);
+  user-select: none; /* 모바일에서 글자 선택 방지 */
+}
+/* 모바일 터치 기기에서는 hover가 남는 현상이 있으므로 @media (hover: hover) 고려 가능 */
+.calendar-day:hover:not(.empty):not(.disabled):not(.btn-active) {
+  background-color: #e2e8f0;
+}
+.calendar-day.empty, .calendar-day.disabled {
+  color: #cbd5e1;
+  cursor: default;
+  background-color: transparent !important;
+}
+.calendar-day.disabled {
+  text-decoration: line-through;
+}
+
+.calendar-nav-btn {
+  width: 32px; height: 32px; 
+  display: flex; align-items: center; justify-content: center; 
+  border-radius: 8px; color: #64748b; 
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.calendar-nav-btn:hover { 
+  background-color: #f1f5f9; 
+  color: #0f172a; 
+}
+
+/* 버튼 스타일 정리 (지역, 어종) */
+.region-btn, .species-btn {
+  border: 1px solid var(--border-color); 
+  border-radius: 12px; 
+  font-size: 13px;
+  font-weight: 600; 
+  padding: 10px; 
+  transition: all 0.2s ease;
+  background-color: white; 
+  color: #475569; 
+  text-align: center;
+  cursor: pointer;
+}
+.region-btn:hover, .species-btn:hover {
+  border-color: #c7d2fe; 
+  color: var(--primary-color); 
+  background-color: #f8fafc;
+}

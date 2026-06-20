@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
+    
+    <title>{% block title %}블루앵커 - 대한민국 1등 선상낚시 예약{% endblock %}</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="/css/style.css?v=1.2">
+    
+    <style>
+        /* 커스텀 화살표 디자인 (전역 사용) */
+        .custom-arrow {
+            width: 44px; height: 44px; background: white; border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #f1f5f9;
+            display: flex; align-items: center; justify-content: center;
+            color: #475569; font-size: 16px; cursor: pointer; transition: all 0.2s;
+            position: absolute; top: 50%; transform: translateY(-50%); z-index: 20;
+        }
+        .custom-arrow:hover { color: #2563eb; box-shadow: 0 6px 15px rgba(0,0,0,0.15); scale: 1.05; }
+        .custom-arrow.swiper-button-disabled { opacity: 0; pointer-events: none; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased overflow-x-hidden">
+
+    {% include 'components/nav.html' %}
+
+    {% block content %}
+    {% endblock %}
+
+    {% include 'components/search_modal.html' %}
+
+    {% include 'components/footer.html' %}
+
+    <script type="module" src="/js/ui.js"></script>
+</body>
+</html>
