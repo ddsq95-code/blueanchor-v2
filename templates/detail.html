@@ -565,6 +565,14 @@
         document.getElementById("mapAddressText").innerText = searchAddress;
         
         const mapContainer = document.getElementById("mapContainer");
+        let isMapLoaded = false;
+        
+        // 🔥 카카오맵 로딩 타임아웃 방어 (3초 안에 지도 안뜨면 무조건 우회 링크 표시)
+        setTimeout(() => {
+            if (!isMapLoaded) {
+                renderKakaoMapFallback(mapContainer, searchAddress);
+            }
+        }, 3000);
         
         // 🔥 카카오맵 로딩 에러 방어 및 직접 보기 링크로 우회 처리
         if (typeof kakao !== 'undefined' && kakao.maps) {
@@ -572,22 +580,24 @@
                 try {
                     const ps = new kakao.maps.services.Places(); 
                     ps.keywordSearch(searchAddress, function(data, status) {
+                        isMapLoaded = true; // 응답 받음 성공
                         mapContainer.innerHTML = ''; 
+                        
                         if (status === kakao.maps.services.Status.OK) {
                             const coords = new kakao.maps.LatLng(data[0].y, data[0].x);
                             const map = new kakao.maps.Map(mapContainer, { center: coords, level: 3 });
                             new kakao.maps.Marker({ map: map, position: coords });
                         } else {
-                            mapContainer.innerHTML = '<span class="text-xs text-slate-500 font-bold">지도 위치를 찾을 수 없습니다.</span>';
+                            renderKakaoMapFallback(mapContainer, searchAddress);
                         }
                     });
                 } catch (e) {
-                    // 키 오류나 서비스 객체 접근 불가 시 우회
+                    isMapLoaded = true;
                     renderKakaoMapFallback(mapContainer, searchAddress);
                 }
             });
         } else {
-            // 카카오맵 스크립트 자체가 차단되었을 때 (도메인 미등록 등)
+            isMapLoaded = true;
             renderKakaoMapFallback(mapContainer, searchAddress);
         }
 
@@ -629,7 +639,7 @@
     function renderKakaoMapFallback(container, address) {
         const mapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(address)}`;
         container.innerHTML = `
-            <div class="flex flex-col items-center gap-3">
+            <div class="flex flex-col items-center gap-3 w-full h-full justify-center bg-slate-100">
                 <span class="text-[13px] text-slate-500 font-bold text-center px-4">지도를 바로 불러올 수 없습니다.</span>
                 <a href="${mapUrl}" target="_blank" class="text-[13px] font-bold text-slate-800 bg-[#FEE500] px-4 py-2 rounded-lg hover:bg-[#FADA0A] transition-colors shadow-sm flex items-center gap-2">
                     <i class="fa-solid fa-map-location-dot"></i> 카카오맵에서 직접 보기
