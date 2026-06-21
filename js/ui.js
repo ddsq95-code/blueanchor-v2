@@ -3,14 +3,12 @@
 // 역할: 화면 렌더링, 이벤트 제어 및 전국 50개 조위관측소 매핑 모듈
 // ==========================================
 
-// 🔥 핵심 버그 수정: 로컬(127.0.0.1)과 배포 서버(Render)의 API 주소를 자동 감지합니다!
 const API_BASE_URL = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') ? 'http://127.0.0.1:8000' : '';
 
 let currentObsCode = 'DT_0025';
 const realTimeNow = new Date();
 let currentSelectedDate = new Date(realTimeNow.getFullYear(), realTimeNow.getMonth(), realTimeNow.getDate());
 
-// 💡 사용자 제공 50개 관측소 데이터 완벽 이식 및 권역별 재분류
 const regionGroups = {
     '서해 중북부': [
         { name: '인천', code: 'DT_0001', lat: 37.451944, lon: 126.592222 },
@@ -82,9 +80,6 @@ let modalCoastTab = '서해 중북부';
 let modalGuestCount = 1;
 let modalSelectedSpecies = '전체';
 
-// ==========================================
-// 🚀 안전한 API 호출 함수들
-// ==========================================
 async function safeFetchDailyData(obsCode, dateStr) {
     try {
         const res = await fetch(`${API_BASE_URL}/api/daily-data?obs_code=${obsCode}&date_str=${dateStr}`, { cache: 'no-store' });
@@ -173,9 +168,6 @@ function getTideDetail(date) {
     return { name: tideMap[lunarDay] || '무시', lunarDay: lunarDay };
 }
 
-// ==========================================
-// 📅 달력 및 모달 제어
-// ==========================================
 function getModalElement() { return document.getElementById('filter-modal'); }
 
 function openSearchModal() {
@@ -249,9 +241,6 @@ function selectModalDate(y, m, d) {
     renderTideCard();
 }
 
-// ==========================================
-// 🌊 조위/날씨 공통 카드 HTML 생성 함수
-// ==========================================
 async function fetchAndBuildTideCardHtml(targetDate, regionCode, regionName) {
     const selTide = getTideDetail(targetDate);
     const y = targetDate.getFullYear();
@@ -476,7 +465,6 @@ function buildWeatherCard(windyUrl, wIcon, tempStr, waveStr, rainStr, sunHtml) {
     `;
 }
 
-// 💡 모달/사이드바용 조위 카드 업데이트
 async function renderTideCard() {
     const container = document.getElementById('tideCardContainer');
     if(!container) return;
@@ -496,9 +484,6 @@ async function updateSidebarSeaCondition() {
     container.innerHTML = await fetchAndBuildTideCardHtml(currentSelectedDate, currentObsCode, rName);
 }
 
-// ==========================================
-// 🖱️ 탭 제어, 태그 및 필터 로직
-// ==========================================
 function renderRegionTabs() {
     const container = document.getElementById('regionTabs');
     if(container) {
@@ -506,6 +491,7 @@ function renderRegionTabs() {
     }
 }
 function selectCoastTab(c) { modalCoastTab = c; renderRegionTabs(); renderRegions(); }
+
 function renderRegions() {
     const container = document.getElementById('regionGrid');
     if(container) {
@@ -525,6 +511,7 @@ function changeGuest(v) {
     const textEl = document.getElementById('modalGuestText');
     if (textEl) textEl.innerText = modalGuestCount;
 }
+
 function renderSpecies() {
     const container = document.getElementById('speciesGrid');
     if(container) {
@@ -540,7 +527,6 @@ function applyFilters() {
     currentObsCode = modalSelectedRegion.code;
     const d = currentSelectedDate;
     
-    // index.html 탐색바 갱신
     const bDate = document.getElementById('barDate');
     const bReg = document.getElementById('barRegion');
     const bGst = document.getElementById('barGuests');
@@ -551,7 +537,6 @@ function applyFilters() {
     if(bGst) bGst.innerText = modalGuestCount + '명';
     if(bSpc) bSpc.innerText = modalSelectedSpecies;
     
-    // search.html 필터바 갱신
     const fDate = document.getElementById('filter-date-btn');
     const fReg = document.getElementById('filter-region-btn');
     const fGst = document.getElementById('filter-guest-btn');
@@ -675,15 +660,151 @@ function renderTagButtons() {
     if(applyCount) applyCount.innerText = selectedTags.length;
 }
 
-window.onload = function() {
+function buildBoatCardHtml(boat, isIndexPage) {
+    // 1. 임시로 랜덤 잔여 좌석 생성 (실제 서비스에서는 DB 값을 써야 함)
+    let availableSeats = Math.floor(Math.random() * (boat.max_guests - 1)) + 1;
+
+    // 2. 숫자에 맞춰 상태값(마감임박 여부) 논리 동기화
+    // DB에서 마감임박으로 되어 있는데 잔여석이 많으면 모순이므로 강제로 1~3석으로 조작
+    if (boat.is_closing_soon && availableSeats > 3) {
+        availableSeats = Math.floor(Math.random() * 3) + 1; 
+    } else if (!boat.is_closing_soon && availableSeats <= 3) {
+        availableSeats = Math.floor(Math.random() * (boat.max_guests - 4)) + 4; // 반대의 경우도 넉넉하게 보정
+    }
+
+    // 3. 실제 표시할 때 3석 이하만 빨간색(마감임박)으로 표시
+    const actuallyClosing = availableSeats <= 3;
+    const closingBadge = actuallyClosing ? `<span class="bg-rose-500 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm animate-pulse">마감임박</span>` : `<span class="bg-amber-500 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">예약가능</span>`;
+    const seatColor = actuallyClosing ? 'text-rose-500' : 'text-blue-500';
+    const seatIconColor = actuallyClosing ? 'text-rose-400' : 'text-blue-400';
+    
+    let tagsHtml = '';
+    if(boat.tags) {
+        const tagsArr = boat.tags.split(',');
+        tagsArr.forEach(t => {
+            tagsHtml += `<span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">#${t.trim()}</span>`;
+        });
+    }
+
+    const cardClass = isIndexPage ? "smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all h-full flex flex-col group relative" : "smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col group relative";
+
+    return `
+        <div class="${cardClass}" onclick="location.href='detail.html?id=${boat.id}'" data-rating="${boat.rating}" data-price="${boat.price}" data-new="${boat.id}">
+            <div class="relative ${isIndexPage ? 'h-[220px]' : 'h-[200px]'} bg-slate-100 overflow-hidden">
+                <img src="${boat.image_url}?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                <div class="absolute top-4 left-4 flex gap-1.5 z-10 pointer-events-none">
+                    <span class="bg-blue-600 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">실시간예약</span>
+                    ${closingBadge}
+                </div>
+                <div class="absolute bottom-4 right-4 z-10 pointer-events-none">
+                    <span class="bg-slate-900/70 backdrop-blur-sm text-white text-[12px] font-bold px-2.5 py-1.5 rounded flex items-center gap-1.5">
+                        <i class="fa-solid fa-anchor text-[10px]"></i> ${boat.tonnage}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="${isIndexPage ? 'p-5' : 'p-4'} flex flex-col flex-1">
+                ${!isIndexPage ? `<div class="text-[11px] font-bold text-slate-400 mb-1 tracking-tight">[${boat.region}]</div>` : ''}
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="${isIndexPage ? 'text-[20px]' : 'text-[17px]'} font-black text-slate-800 tracking-tight">${boat.name}</h3>
+                    <span class="${seatColor} text-[13px] font-black flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-group ${seatIconColor}"></i> 잔여 ${availableSeats}석 
+                        <span class="text-slate-900 text-[14px] font-bold ml-0.5">/ 총 ${boat.max_guests}명</span>
+                    </span>
+                </div>
+                <div class="text-[12px] font-bold text-amber-500 ${isIndexPage ? 'mb-4' : 'mb-3'} flex items-center gap-1.5">
+                    <i class="fa-solid fa-star text-[12px]"></i> ${boat.rating.toFixed(1)} <span class="text-slate-400 font-normal text-[12px]">(${boat.review_count})</span>
+                </div>
+                
+                <div class="flex flex-col gap-2.5 mb-5 mt-auto">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">문의</span>
+                            <span class="font-bold text-[15px] text-slate-800">010-0000-0000</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 ml-auto">
+                            <!-- 밴드, 인스타 링크 -->
+                            <a href="https://band.us" target="_blank" onclick="event.stopPropagation()" class="w-6 h-6 flex items-center justify-center rounded bg-[#03C75A]/10 text-[#03C75A] hover:bg-[#03C75A] hover:text-white transition-colors" title="네이버 밴드"><span class="font-black text-[11px]">B</span></a>
+                            <a href="https://instagram.com" target="_blank" onclick="event.stopPropagation()" class="w-6 h-6 flex items-center justify-center rounded bg-pink-50 text-pink-500 hover:bg-gradient-to-tr hover:from-yellow-400 hover:via-pink-500 hover:to-purple-500 hover:text-white transition-all" title="인스타그램"><i class="fa-brands fa-instagram text-[13px]"></i></a>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 text-[11px] text-slate-600">
+                        <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">위치</span>
+                        <span class="font-medium text-[14px] text-slate-600 truncate">${boat.region} ${boat.port}</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-1.5 mb-3">
+                    ${tagsHtml}
+                </div>
+                <div class="mt-auto border-t border-slate-100 pt-4 flex justify-between items-end">
+                    <span class="text-[12px] text-slate-400 font-medium">1인 대여기준</span>
+                    <div class="text-xl font-black text-slate-800 tracking-tight">
+                        ${boat.price.toLocaleString()}<span class="text-[14px] font-bold ml-0.5">원</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+window.onload = async function() {
     const barDateEl = document.getElementById('barDate');
     if (barDateEl) barDateEl.innerText = `${currentSelectedDate.getFullYear()}. ${String(currentSelectedDate.getMonth()+1).padStart(2,'0')}. ${String(currentSelectedDate.getDate()).padStart(2,'0')}`;
     
     const filterDateEl = document.getElementById('filter-date-btn');
     if (filterDateEl) filterDateEl.innerText = `${String(currentSelectedDate.getMonth()+1).padStart(2,'0')}. ${String(currentSelectedDate.getDate()).padStart(2,'0')}`;
     
+    const token = localStorage.getItem('blueanchor_token');
+    const userName = localStorage.getItem('blueanchor_name');
+    if(token && userName) {
+        const loginLinks = document.querySelectorAll('a');
+        loginLinks.forEach(link => {
+            if(link.innerText.includes('로그인')) {
+                link.innerHTML = `<i class="fa-solid fa-circle-user text-blue-500"></i> ${userName}님`;
+                link.href = 'javascript:void(0)';
+                link.onclick = function() {
+                    if(confirm('로그아웃 하시겠습니까?')) {
+                        localStorage.removeItem('blueanchor_token');
+                        localStorage.removeItem('blueanchor_name');
+                        location.reload();
+                    }
+                };
+            }
+        });
+    }
+
     if (typeof window.updateWishlistUI === 'function') window.updateWishlistUI();
     updateSidebarSeaCondition();
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/boat/list`);
+        if (res.ok) {
+            const boats = await res.json();
+            const boatListContainerIndex = document.getElementById('boat-list-swiper-wrapper');
+            const boatListContainerSearch = document.getElementById('boat-list-grid');
+
+            if (boats.length > 0) {
+                if (boatListContainerIndex) {
+                    boatListContainerIndex.innerHTML = boats.map(boat => `<div class="swiper-slide w-[300px] md:w-[340px]">${buildBoatCardHtml(boat, true)}</div>`).join('');
+                    if (typeof Swiper !== 'undefined') {
+                        const swiperEl = document.querySelector('.boatSwiper');
+                        if (swiperEl && swiperEl.swiper) {
+                            swiperEl.swiper.update();
+                        }
+                    }
+                }
+                if (boatListContainerSearch) {
+                    boatListContainerSearch.innerHTML = boats.map(boat => buildBoatCardHtml(boat, false)).join('');
+                }
+            } else {
+                if(boatListContainerIndex) boatListContainerIndex.innerHTML = `<div class="text-center p-10 text-slate-500 w-full">등록된 선사가 없습니다. (DB 확인 필요)</div>`;
+                if(boatListContainerSearch) boatListContainerSearch.innerHTML = `<div class="col-span-full text-center p-10 text-slate-500">등록된 선사가 없습니다. (DB 확인 필요)</div>`;
+            }
+        }
+    } catch (e) {
+        console.error("DB 로딩 에러:", e);
+    }
 };
 
 window.updateWishlistUI = function() {
@@ -718,10 +839,6 @@ document.addEventListener("DOMContentLoaded", function() {
             window.updateWishlistUI();
             return;
         }
-
-        const card = e.target.closest('.smart-link-card');
-        const isActionBtn = e.target.closest('a, button, .swiper-button-prev, .swiper-button-next, .swiper-pagination, input');
-        if (card && !isActionBtn) location.href = 'detail.html';
     });
 });
 

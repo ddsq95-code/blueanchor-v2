@@ -5,8 +5,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
 
-# 라우터 모듈 임포트
-from routers import api_boat, api_marine, api_weather
+# 라우터 모듈 임포트 (💡 api_auth 추가됨!)
+from routers import api_boat, api_marine, api_weather, api_auth
 
 app = FastAPI(title="낚시 플랫폼 API")
 
@@ -23,9 +23,11 @@ app.mount("/images", StaticFiles(directory=os.path.join(BASE_DIR, "images")), na
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 # 🔥 [핵심 수정 2] API 라우터 등록 (프론트엔드 JS fetch 경로와 일치하도록 prefix 추가)
-app.include_router(api_boat.router, prefix="/api/boats")
+app.include_router(api_boat.router, prefix="/api/boat")
 app.include_router(api_marine.router, prefix="/api")
 app.include_router(api_weather.router, prefix="/api/weather")
+# 💡 회원가입/로그인 라우터 등록 추가!
+app.include_router(api_auth.router, prefix="/api/auth", tags=["Auth"])
 
 # ---------------------------------------------------------
 # 🌐 프론트엔드 페이지 렌더링 라우터
@@ -61,6 +63,14 @@ async def read_detail_legacy(request: Request, id: str = None):
 @app.get("/payment.html", response_class=HTMLResponse)
 async def read_payment(request: Request):
     return templates.TemplateResponse(request=request, name="payment.html")
+
+@app.get("/login.html", response_class=HTMLResponse)
+async def read_login(request: Request):
+    return templates.TemplateResponse(request=request, name="login.html")
+
+@app.get("/signup.html", response_class=HTMLResponse)
+async def read_signup(request: Request):
+    return templates.TemplateResponse(request=request, name="signup.html")
 
 if __name__ == "__main__":
     # Render 환경에서 할당하는 포트를 가져오고, 없으면 기본값 8000 사용

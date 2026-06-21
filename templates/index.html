@@ -19,7 +19,7 @@
         .mainBannerSwiper .swiper-pagination-bullet { width: 8px; height: 8px; background: #fff; opacity: 0.4; transition: all 0.3s; }
         .mainBannerSwiper .swiper-pagination-bullet-active { width: 24px; border-radius: 4px; opacity: 1; }
 
-        /* 카드 내부 이미지 슬라이더 커스텀 (야놀자 스타일) */
+        /* 카드 내부 이미지 슬라이더 커스텀 */
         .innerImageSwiper .swiper-button-next,
         .innerImageSwiper .swiper-button-prev {
             width: 32px; height: 32px;
@@ -40,7 +40,7 @@
         .innerImageSwiper .swiper-pagination-bullet { background: #fff; opacity: 0.5; width: 6px; height: 6px; }
         .innerImageSwiper .swiper-pagination-bullet-active { background: #fff; opacity: 1; width: 6px; border-radius: 50%; }
         
-        /* 💡 외부 카드 슬라이더 좌우 화살표 (PC용) */
+        /* 외부 카드 슬라이더 좌우 화살표 (PC용) */
         .outer-nav-btn {
             width: 48px; height: 48px; background-color: #fff; border-radius: 50%;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #f1f5f9;
@@ -72,7 +72,7 @@
                     <i class="fa-solid fa-heart text-lg text-slate-400"></i>
                     <span id="wishlistCount" class="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full hidden">0</span>
                 </a>
-                <a href="#" class="text-sm font-bold text-slate-600 ml-2">로그인</a>
+                <a href="login.html" class="text-sm font-bold text-slate-600 ml-2">로그인</a>
                 <a href="#" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-[13px] font-bold hover:bg-blue-100 transition-colors border border-blue-100 flex items-center gap-1.5"><i class="fa-solid fa-ship"></i> 선장님 파트너 가입</a>
             </div>
         </div>
@@ -139,7 +139,7 @@
         </div>
     </section>
 
-    <!-- 💡 3. 선사 추천 카드 (8장 + 낚시 테마 고정 이미지 적용) -->
+    <!-- 💡 3. 선사 추천 카드 (DB 데이터 연동 영역) -->
     <section class="max-w-7xl mx-auto px-4 mb-20 relative">
         <div class="flex justify-between items-end mb-6">
             <div>
@@ -153,530 +153,13 @@
 
         <div class="relative group w-full">
             <div class="swiper boatSwiper overflow-hidden pb-4">
-                <div class="swiper-wrapper py-2">
-                    
-                    <!-- 🎣 카드 1 -->
-                    <div class="swiper-slide w-[300px] md:w-[340px]">
-                        <div class="smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all h-full flex flex-col group relative">
-                            <div class="relative h-[220px] bg-slate-100 overflow-hidden">
-                                <div class="swiper innerImageSwiper w-full h-full">
-                                    <div class="swiper-wrapper">
-                                        <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1544329621-e00eb2c300ea?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover"></div>
-                                        <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1583416750470-965b2707b355?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover"></div>
-                                    </div>
-                                    <div class="swiper-button-prev custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-button-next custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-pagination" onclick="event.stopPropagation()"></div>
-                                </div>
-                                <div class="absolute top-4 left-4 flex gap-1.5 z-10 pointer-events-none">
-                                    <span class="bg-blue-600 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">실시간예약</span>
-                                    <span class="bg-rose-500 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm animate-pulse">마감임박</span>
-                                </div>
-                                <button type="button" data-boat-id="boat001" class="wishlist-btn absolute top-3 right-3 z-20 transition-all hover:scale-110">
-                                    <i class="fa-regular fa-heart text-[24px] text-white drop-shadow-md"></i>
-                                </button>
-                                <div class="absolute bottom-4 right-4 z-10 pointer-events-none">
-                                    <span class="bg-slate-900/70 backdrop-blur-sm text-white text-[12px] font-bold px-2.5 py-1.5 rounded flex items-center gap-1.5">
-                                        <i class="fa-solid fa-anchor text-[10px]"></i> 9.77t
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-5 flex flex-col flex-1">
-                                <div class="flex justify-between items-center mb-2">
-                                    <h3 class="text-[20px] font-black text-slate-800 tracking-tight">블루오션호</h3>
-                                    <span class="text-rose-500 text-[14px] font-black flex items-center gap-1.5">
-                                        <i class="fa-solid fa-user-group text-[12px]"></i> 잔여 3석 
-                                        <span class="text-slate-900 text-[14px] font-bold ml-0.5">/ 총 22명</span>
-                                    </span>
-                                </div>
-                                <div class="text-[13.5px] font-bold text-amber-500 mb-4 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-star text-[12px]"></i> 4.9 <span class="text-slate-400 font-normal text-[12px]">(128)</span>
-                                </div>
-                                <div class="flex flex-col gap-2.5 mb-5">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">문의</span>
-                                            <span class="font-bold text-[15px] text-slate-800">010-1234-5678</span>
-                                        </div>
-                                        <div class="flex items-center gap-1.5">
-                                            <a href="javascript:void(0)" onclick="event.stopPropagation()" class="w-7 h-7 flex items-center justify-center rounded bg-[#03C75A]/10 text-[#03C75A] hover:bg-[#03C75A] hover:text-white transition-colors" title="네이버 밴드"><span class="font-black text-[13px]">B</span></a>
-                                            <a href="javascript:void(0)" onclick="event.stopPropagation()" class="w-7 h-7 flex items-center justify-center rounded bg-pink-50 text-pink-500 hover:bg-gradient-to-tr hover:from-yellow-400 hover:via-pink-500 hover:to-purple-500 hover:text-white transition-all" title="인스타그램"><i class="fa-brands fa-instagram text-[14px]"></i></a>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">위치</span>
-                                        <span class="font-medium text-[14px] text-slate-600 truncate">충남 보령시 오천항</span>
-                                    </div>
-                                </div>
-                                <div class="flex flex-wrap gap-1.5 mb-3">
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">참돔 타이라바</span>
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">광어 다운샷</span>
-                                </div>
-                                <div class="mt-auto border-t border-slate-100 pt-4 flex justify-between items-end">
-                                    <span class="text-[12px] text-slate-400 font-medium">1인 대여기준</span>
-                                    <div class="text-2xl font-black text-slate-800 tracking-tight">
-                                        150,000<span class="text-[14px] font-bold ml-0.5">원</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 🎣 카드 2 -->
-                    <div class="swiper-slide w-[300px] md:w-[340px]">
-                        <div class="smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all h-full flex flex-col group relative">
-                            <div class="relative h-[220px] bg-slate-100 overflow-hidden">
-                                <div class="swiper innerImageSwiper w-full h-full">
-                                    <div class="swiper-wrapper">
-                                        <!-- 💡 대체 고정 이미지 적용 -->
-                                        <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1533261968817-063a8a3854eb?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover"></div>
-                                        <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover"></div>
-                                    </div>
-                                    <div class="swiper-button-prev custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-button-next custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-pagination" onclick="event.stopPropagation()"></div>
-                                </div>
-                                <div class="absolute top-4 left-4 flex gap-1.5 z-10 pointer-events-none">
-                                    <span class="bg-blue-600 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">실시간예약</span>
-                                    <span class="bg-amber-500 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">예약가능</span>
-                                </div>
-                                <button type="button" data-boat-id="boat002" class="wishlist-btn absolute top-3 right-3 z-20 transition-all hover:scale-110">
-                                    <i class="fa-regular fa-heart text-[24px] text-white drop-shadow-md"></i>
-                                </button>
-                                <div class="absolute bottom-4 right-4 z-10 pointer-events-none">
-                                    <span class="bg-slate-900/70 backdrop-blur-sm text-white text-[12px] font-bold px-2.5 py-1.5 rounded flex items-center gap-1.5">
-                                        <i class="fa-solid fa-anchor text-[10px]"></i> 7.31t
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-5 flex flex-col flex-1">
-                                <div class="flex justify-between items-center mb-2">
-                                    <h3 class="text-[20px] font-black text-slate-800 tracking-tight">에이스마스터호</h3>
-                                    <span class="text-blue-500 text-[14px] font-black flex items-center gap-1.5">
-                                        <i class="fa-solid fa-user-group text-[12px]"></i> 여유 8석 
-                                        <span class="text-slate-900 text-[14px] font-bold ml-0.5">/ 총 18명</span>
-                                    </span>
-                                </div>
-                                <div class="text-[13.5px] font-bold text-amber-500 mb-4 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-star text-[12px]"></i> 4.7 <span class="text-slate-400 font-normal text-[12px]">(85)</span>
-                                </div>
-                                <div class="flex flex-col gap-2.5 mb-5">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">문의</span>
-                                            <span class="font-bold text-[15px] text-slate-800">010-6823-1976</span>
-                                        </div>
-                                        <div class="flex items-center gap-1.5">
-                                            <a href="javascript:void(0)" onclick="event.stopPropagation()" class="w-7 h-7 flex items-center justify-center rounded bg-[#03C75A]/10 text-[#03C75A] hover:bg-[#03C75A] hover:text-white transition-colors"><span class="font-black text-[13px]">B</span></a>
-                                            <a href="javascript:void(0)" onclick="event.stopPropagation()" class="w-7 h-7 flex items-center justify-center rounded bg-pink-50 text-pink-500 hover:bg-gradient-to-tr hover:from-yellow-400 hover:via-pink-500 hover:to-purple-500 hover:text-white transition-all"><i class="fa-brands fa-instagram text-[14px]"></i></a>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">위치</span>
-                                        <span class="font-medium text-[14px] text-slate-600 truncate">인천 중구 남항부두</span>
-                                    </div>
-                                </div>
-                                <div class="flex flex-wrap gap-1.5 mb-3">
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">우럭 외연낚시</span>
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">광어 다운샷</span>
-                                </div>
-                                <div class="mt-auto border-t border-slate-100 pt-4 flex justify-between items-end">
-                                    <span class="text-[12px] text-slate-400 font-medium">1인 대여기준</span>
-                                    <div class="text-2xl font-black text-slate-800 tracking-tight">
-                                        100,000<span class="text-[14px] font-bold ml-0.5">원</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 🎣 카드 3 -->
-                    <div class="swiper-slide w-[300px] md:w-[340px]">
-                        <div class="smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all h-full flex flex-col group relative">
-                            <div class="relative h-[220px] bg-slate-100 overflow-hidden">
-                                <div class="swiper innerImageSwiper w-full h-full">
-                                    <div class="swiper-wrapper">
-                                        <!-- 💡 대체 고정 이미지 적용 -->
-                                        <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1517409205562-b13c32d4cb05?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover"></div>
-                                    </div>
-                                    <div class="swiper-button-prev custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-button-next custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-pagination" onclick="event.stopPropagation()"></div>
-                                </div>
-                                <div class="absolute top-4 left-4 flex gap-1.5 z-10 pointer-events-none">
-                                    <span class="bg-blue-600 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">실시간예약</span>
-                                    <span class="bg-rose-500 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm animate-pulse">마감임박</span>
-                                </div>
-                                <button type="button" data-boat-id="boat003" class="wishlist-btn absolute top-3 right-3 z-20 transition-all hover:scale-110">
-                                    <i class="fa-regular fa-heart text-[24px] text-white drop-shadow-md"></i>
-                                </button>
-                                <div class="absolute bottom-4 right-4 z-10 pointer-events-none">
-                                    <span class="bg-slate-900/70 backdrop-blur-sm text-white text-[12px] font-bold px-2.5 py-1.5 rounded flex items-center gap-1.5">
-                                        <i class="fa-solid fa-anchor text-[10px]"></i> 9.77t
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-5 flex flex-col flex-1">
-                                <div class="flex justify-between items-center mb-2">
-                                    <h3 class="text-[20px] font-black text-slate-800 tracking-tight">레전드피싱호</h3>
-                                    <span class="text-rose-500 text-[14px] font-black flex items-center gap-1.5">
-                                        <i class="fa-solid fa-user-group text-[12px]"></i> 잔여 1석 
-                                        <span class="text-slate-900 text-[14px] font-bold ml-0.5">/ 총 20명</span>
-                                    </span>
-                                </div>
-                                <div class="text-[13.5px] font-bold text-amber-500 mb-4 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-star text-[12px]"></i> 5.0 <span class="text-slate-400 font-normal text-[12px]">(214)</span>
-                                </div>
-                                <div class="flex flex-col gap-2.5 mb-5">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">문의</span>
-                                            <span class="font-bold text-[15px] text-slate-800">010-2231-1111</span>
-                                        </div>
-                                        <div class="flex items-center gap-1.5">
-                                            <a href="javascript:void(0)" onclick="event.stopPropagation()" class="w-7 h-7 flex items-center justify-center rounded bg-[#03C75A]/10 text-[#03C75A] hover:bg-[#03C75A] hover:text-white transition-colors"><span class="font-black text-[13px]">B</span></a>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">위치</span>
-                                        <span class="font-medium text-[14px] text-slate-600 truncate">전북 군산시 비응항</span>
-                                    </div>
-                                </div>
-                                <div class="flex flex-wrap gap-1.5 mb-3">
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">쭈꾸미 생미끼</span>
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">갑오징어</span>
-                                </div>
-                                <div class="mt-auto border-t border-slate-100 pt-4 flex justify-between items-end">
-                                    <span class="text-[12px] text-slate-400 font-medium">1인 대여기준</span>
-                                    <div class="text-2xl font-black text-slate-800 tracking-tight">
-                                        140,000<span class="text-[14px] font-bold ml-0.5">원</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 🎣 카드 4 -->
-                    <div class="swiper-slide w-[300px] md:w-[340px]">
-                        <div class="smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all h-full flex flex-col group relative">
-                            <div class="relative h-[220px] bg-slate-100 overflow-hidden">
-                                <div class="swiper innerImageSwiper w-full h-full">
-                                    <div class="swiper-wrapper">
-                                        <!-- 💡 대체 고정 이미지 적용 -->
-                                        <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover"></div>
-                                    </div>
-                                    <div class="swiper-button-prev custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-button-next custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-pagination" onclick="event.stopPropagation()"></div>
-                                </div>
-                                <div class="absolute top-4 left-4 flex gap-1.5 z-10 pointer-events-none">
-                                    <span class="bg-blue-600 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">실시간예약</span>
-                                    <span class="bg-amber-500 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">예약가능</span>
-                                </div>
-                                <button type="button" data-boat-id="boat004" class="wishlist-btn absolute top-3 right-3 z-20 transition-all hover:scale-110">
-                                    <i class="fa-regular fa-heart text-[24px] text-white drop-shadow-md"></i>
-                                </button>
-                                <div class="absolute bottom-4 right-4 z-10 pointer-events-none">
-                                    <span class="bg-slate-900/70 backdrop-blur-sm text-white text-[12px] font-bold px-2.5 py-1.5 rounded flex items-center gap-1.5">
-                                        <i class="fa-solid fa-anchor text-[10px]"></i> 5.00t
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-5 flex flex-col flex-1">
-                                <div class="flex justify-between items-center mb-2">
-                                    <h3 class="text-[20px] font-black text-slate-800 tracking-tight">블루스카이호</h3>
-                                    <span class="text-blue-500 text-[14px] font-black flex items-center gap-1.5">
-                                        <i class="fa-solid fa-user-group text-[12px]"></i> 여유 5석 
-                                        <span class="text-slate-900 text-[14px] font-bold ml-0.5">/ 총 12명</span>
-                                    </span>
-                                </div>
-                                <div class="text-[13.5px] font-bold text-amber-500 mb-4 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-star text-[12px]"></i> 4.8 <span class="text-slate-400 font-normal text-[12px]">(155)</span>
-                                </div>
-                                <div class="flex flex-col gap-2.5 mb-5">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">문의</span>
-                                            <span class="font-bold text-[15px] text-slate-800">010-8850-0029</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">위치</span>
-                                        <span class="font-medium text-[14px] text-slate-600 truncate">전남 여수시 국동항</span>
-                                    </div>
-                                </div>
-                                <div class="flex flex-wrap gap-1.5 mb-3">
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">갈치 지깅</span>
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">한치 한가득</span>
-                                </div>
-                                <div class="mt-auto border-t border-slate-100 pt-4 flex justify-between items-end">
-                                    <span class="text-[12px] text-slate-400 font-medium">1인 대여기준</span>
-                                    <div class="text-2xl font-black text-slate-800 tracking-tight">
-                                        180,000<span class="text-[14px] font-bold ml-0.5">원</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 🎣 카드 5 -->
-                    <div class="swiper-slide w-[300px] md:w-[340px]">
-                        <div class="smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all h-full flex flex-col group relative">
-                            <div class="relative h-[220px] bg-slate-100 overflow-hidden">
-                                <div class="swiper innerImageSwiper w-full h-full">
-                                    <div class="swiper-wrapper">
-                                        <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1551024739-78e9d60c45cb?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover"></div>
-                                    </div>
-                                    <div class="swiper-button-prev custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-button-next custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-pagination" onclick="event.stopPropagation()"></div>
-                                </div>
-                                <div class="absolute top-4 left-4 flex gap-1.5 z-10 pointer-events-none">
-                                    <span class="bg-blue-600 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">실시간예약</span>
-                                    <span class="bg-amber-500 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">예약가능</span>
-                                </div>
-                                <button type="button" data-boat-id="boat005" class="wishlist-btn absolute top-3 right-3 z-20 transition-all hover:scale-110">
-                                    <i class="fa-regular fa-heart text-[24px] text-white drop-shadow-md"></i>
-                                </button>
-                                <div class="absolute bottom-4 right-4 z-10 pointer-events-none">
-                                    <span class="bg-slate-900/70 backdrop-blur-sm text-white text-[12px] font-bold px-2.5 py-1.5 rounded flex items-center gap-1.5">
-                                        <i class="fa-solid fa-anchor text-[10px]"></i> 7.93t
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-5 flex flex-col flex-1">
-                                <div class="flex justify-between items-center mb-2">
-                                    <h3 class="text-[20px] font-black text-slate-800 tracking-tight">강릉 포세이돈</h3>
-                                    <span class="text-blue-500 text-[14px] font-black flex items-center gap-1.5">
-                                        <i class="fa-solid fa-user-group text-[12px]"></i> 여유 5석 
-                                        <span class="text-slate-900 text-[14px] font-bold ml-0.5">/ 총 16명</span>
-                                    </span>
-                                </div>
-                                <div class="text-[13.5px] font-bold text-amber-500 mb-4 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-star text-[12px]"></i> 4.6 <span class="text-slate-400 font-normal text-[12px]">(52)</span>
-                                </div>
-                                <div class="flex flex-col gap-2.5 mb-5">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">문의</span>
-                                            <span class="font-bold text-[15px] text-slate-800">010-3333-4444</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">위치</span>
-                                        <span class="font-medium text-[14px] text-slate-600 truncate">강원 강릉시 강릉항</span>
-                                    </div>
-                                </div>
-                                <div class="flex flex-wrap gap-1.5 mb-3">
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">대구 지깅</span>
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">가자미</span>
-                                </div>
-                                <div class="mt-auto border-t border-slate-100 pt-4 flex justify-between items-end">
-                                    <span class="text-[12px] text-slate-400 font-medium">1인 대여기준</span>
-                                    <div class="text-2xl font-black text-slate-800 tracking-tight">
-                                        80,000<span class="text-[14px] font-bold ml-0.5">원</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 🎣 카드 6 -->
-                    <div class="swiper-slide w-[300px] md:w-[340px]">
-                        <div class="smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all h-full flex flex-col group relative">
-                            <div class="relative h-[220px] bg-slate-100 overflow-hidden">
-                                <div class="swiper innerImageSwiper w-full h-full">
-                                    <div class="swiper-wrapper">
-                                        <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1506452843477-80be406322b7?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover"></div>
-                                    </div>
-                                    <div class="swiper-button-prev custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-button-next custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-pagination" onclick="event.stopPropagation()"></div>
-                                </div>
-                                <div class="absolute top-4 left-4 flex gap-1.5 z-10 pointer-events-none">
-                                    <span class="bg-blue-600 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">실시간예약</span>
-                                    <span class="bg-amber-500 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">예약가능</span>
-                                </div>
-                                <button type="button" data-boat-id="boat006" class="wishlist-btn absolute top-3 right-3 z-20 transition-all hover:scale-110">
-                                    <i class="fa-regular fa-heart text-[24px] text-white drop-shadow-md"></i>
-                                </button>
-                                <div class="absolute bottom-4 right-4 z-10 pointer-events-none">
-                                    <span class="bg-slate-900/70 backdrop-blur-sm text-white text-[12px] font-bold px-2.5 py-1.5 rounded flex items-center gap-1.5">
-                                        <i class="fa-solid fa-anchor text-[10px]"></i> 9.77t
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-5 flex flex-col flex-1">
-                                <div class="flex justify-between items-center mb-2">
-                                    <h3 class="text-[20px] font-black text-slate-800 tracking-tight">통영 몬스터호</h3>
-                                    <span class="text-blue-500 text-[14px] font-black flex items-center gap-1.5">
-                                        <i class="fa-solid fa-user-group text-[12px]"></i> 여유 6석 
-                                        <span class="text-slate-900 text-[14px] font-bold ml-0.5">/ 총 20명</span>
-                                    </span>
-                                </div>
-                                <div class="text-[13.5px] font-bold text-amber-500 mb-4 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-star text-[12px]"></i> 4.9 <span class="text-slate-400 font-normal text-[12px]">(210)</span>
-                                </div>
-                                <div class="flex flex-col gap-2.5 mb-5">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">문의</span>
-                                            <span class="font-bold text-[15px] text-slate-800">010-5555-6666</span>
-                                        </div>
-                                        <div class="flex items-center gap-1.5">
-                                            <a href="javascript:void(0)" onclick="event.stopPropagation()" class="w-7 h-7 flex items-center justify-center rounded bg-[#03C75A]/10 text-[#03C75A] hover:bg-[#03C75A] hover:text-white transition-colors"><span class="font-black text-[13px]">B</span></a>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">위치</span>
-                                        <span class="font-medium text-[14px] text-slate-600 truncate">경남 통영시 통영항</span>
-                                    </div>
-                                </div>
-                                <div class="flex flex-wrap gap-1.5 mb-3">
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">무늬오징어 팁런</span>
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">한치 야간</span>
-                                </div>
-                                <div class="mt-auto border-t border-slate-100 pt-4 flex justify-between items-end">
-                                    <span class="text-[12px] text-slate-400 font-medium">1인 대여기준</span>
-                                    <div class="text-2xl font-black text-slate-800 tracking-tight">
-                                        120,000<span class="text-[14px] font-bold ml-0.5">원</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 🎣 카드 7 -->
-                    <div class="swiper-slide w-[300px] md:w-[340px]">
-                        <div class="smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all h-full flex flex-col group relative">
-                            <div class="relative h-[220px] bg-slate-100 overflow-hidden">
-                                <div class="swiper innerImageSwiper w-full h-full">
-                                    <div class="swiper-wrapper">
-                                        <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1544329621-e00eb2c300ea?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover"></div>
-                                    </div>
-                                    <div class="swiper-button-prev custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-button-next custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-pagination" onclick="event.stopPropagation()"></div>
-                                </div>
-                                <div class="absolute top-4 left-4 flex gap-1.5 z-10 pointer-events-none">
-                                    <span class="bg-blue-600 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">실시간예약</span>
-                                    <span class="bg-rose-500 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm animate-pulse">마감임박</span>
-                                </div>
-                                <button type="button" data-boat-id="boat007" class="wishlist-btn absolute top-3 right-3 z-20 transition-all hover:scale-110">
-                                    <i class="fa-regular fa-heart text-[24px] text-white drop-shadow-md"></i>
-                                </button>
-                                <div class="absolute bottom-4 right-4 z-10 pointer-events-none">
-                                    <span class="bg-slate-900/70 backdrop-blur-sm text-white text-[12px] font-bold px-2.5 py-1.5 rounded flex items-center gap-1.5">
-                                        <i class="fa-solid fa-anchor text-[10px]"></i> 9.77t
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-5 flex flex-col flex-1">
-                                <div class="flex justify-between items-center mb-2">
-                                    <h3 class="text-[20px] font-black text-slate-800 tracking-tight">제주 드림호</h3>
-                                    <span class="text-rose-500 text-[14px] font-black flex items-center gap-1.5">
-                                        <i class="fa-solid fa-user-group text-[12px]"></i> 잔여 2석 
-                                        <span class="text-slate-900 text-[14px] font-bold ml-0.5">/ 총 18명</span>
-                                    </span>
-                                </div>
-                                <div class="text-[13.5px] font-bold text-amber-500 mb-4 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-star text-[12px]"></i> 4.7 <span class="text-slate-400 font-normal text-[12px]">(98)</span>
-                                </div>
-                                <div class="flex flex-col gap-2.5 mb-5">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">문의</span>
-                                            <span class="font-bold text-[15px] text-slate-800">010-7777-8888</span>
-                                        </div>
-                                        <div class="flex items-center gap-1.5">
-                                            <a href="javascript:void(0)" onclick="event.stopPropagation()" class="w-7 h-7 flex items-center justify-center rounded bg-pink-50 text-pink-500 hover:bg-gradient-to-tr hover:from-yellow-400 hover:via-pink-500 hover:to-purple-500 hover:text-white transition-all"><i class="fa-brands fa-instagram text-[14px]"></i></a>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">위치</span>
-                                        <span class="font-medium text-[14px] text-slate-600 truncate">제주 서귀포시 성산항</span>
-                                    </div>
-                                </div>
-                                <div class="flex flex-wrap gap-1.5 mb-3">
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">참돔 타이라바</span>
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">방어 지깅</span>
-                                </div>
-                                <div class="mt-auto border-t border-slate-100 pt-4 flex justify-between items-end">
-                                    <span class="text-[12px] text-slate-400 font-medium">1인 대여기준</span>
-                                    <div class="text-2xl font-black text-slate-800 tracking-tight">
-                                        160,000<span class="text-[14px] font-bold ml-0.5">원</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 🎣 카드 8 -->
-                    <div class="swiper-slide w-[300px] md:w-[340px]">
-                        <div class="smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all h-full flex flex-col group relative">
-                            <div class="relative h-[220px] bg-slate-100 overflow-hidden">
-                                <div class="swiper innerImageSwiper w-full h-full">
-                                    <div class="swiper-wrapper">
-                                        <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover"></div>
-                                    </div>
-                                    <div class="swiper-button-prev custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-button-next custom-arrow" onclick="event.stopPropagation()"></div>
-                                    <div class="swiper-pagination" onclick="event.stopPropagation()"></div>
-                                </div>
-                                <div class="absolute top-4 left-4 flex gap-1.5 z-10 pointer-events-none">
-                                    <span class="bg-blue-600 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">실시간예약</span>
-                                    <span class="bg-amber-500 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">예약가능</span>
-                                </div>
-                                <button type="button" data-boat-id="boat008" class="wishlist-btn absolute top-3 right-3 z-20 transition-all hover:scale-110">
-                                    <i class="fa-regular fa-heart text-[24px] text-white drop-shadow-md"></i>
-                                </button>
-                                <div class="absolute bottom-4 right-4 z-10 pointer-events-none">
-                                    <span class="bg-slate-900/70 backdrop-blur-sm text-white text-[12px] font-bold px-2.5 py-1.5 rounded flex items-center gap-1.5">
-                                        <i class="fa-solid fa-anchor text-[10px]"></i> 9.77t
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="p-5 flex flex-col flex-1">
-                                <div class="flex justify-between items-center mb-2">
-                                    <h3 class="text-[20px] font-black text-slate-800 tracking-tight">완도 빅히트호</h3>
-                                    <span class="text-blue-500 text-[14px] font-black flex items-center gap-1.5">
-                                        <i class="fa-solid fa-user-group text-[12px]"></i> 여유 12석 
-                                        <span class="text-slate-900 text-[14px] font-bold ml-0.5">/ 총 22명</span>
-                                    </span>
-                                </div>
-                                <div class="text-[13.5px] font-bold text-amber-500 mb-4 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-star text-[12px]"></i> 5.0 <span class="text-slate-400 font-normal text-[12px]">(320)</span>
-                                </div>
-                                <div class="flex flex-col gap-2.5 mb-5">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2">
-                                            <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">문의</span>
-                                            <span class="font-bold text-[15px] text-slate-800">010-9999-0000</span>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="border border-slate-200 bg-slate-50 text-slate-500 font-bold px-2 py-1 rounded text-[11.5px] whitespace-nowrap">위치</span>
-                                        <span class="font-medium text-[14px] text-slate-600 truncate">전남 완도군 완도항</span>
-                                    </div>
-                                </div>
-                                <div class="flex flex-wrap gap-1.5 mb-3">
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">대광어 다운샷</span>
-                                    <span class="border border-slate-100 bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-full font-medium">문어</span>
-                                </div>
-                                <div class="mt-auto border-t border-slate-100 pt-4 flex justify-between items-end">
-                                    <span class="text-[12px] text-slate-400 font-medium">1인 대여기준</span>
-                                    <div class="text-2xl font-black text-slate-800 tracking-tight">
-                                        110,000<span class="text-[14px] font-bold ml-0.5">원</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+                <!-- 💡 빈 컨테이너: ui.js에서 DB 데이터를 가져와 이 안에 채워 넣습니다! -->
+                <div class="swiper-wrapper py-2" id="boat-list-swiper-wrapper">
+                    <!-- DB 선사 카드가 동적으로 렌더링 됩니다 -->
                 </div>
             </div>
 
-            <!-- 💡 전체 카드 슬라이더 좌우 네비게이션 버튼 추가 -->
+            <!-- 전체 카드 슬라이더 좌우 네비게이션 버튼 -->
             <button type="button" class="swiper-btn-prev-boat outer-nav-btn absolute top-[40%] -left-6 -translate-y-1/2 hidden md:flex"><i class="fa-solid fa-chevron-left text-lg"></i></button>
             <button type="button" class="swiper-btn-next-boat outer-nav-btn absolute top-[40%] -right-6 -translate-y-1/2 hidden md:flex"><i class="fa-solid fa-chevron-right text-lg"></i></button>
         </div>
@@ -802,23 +285,17 @@
                     pagination: { el: '.mainBannerSwiper .swiper-pagination', clickable: true },
                 });
 
-                // 💡 전체 선사 카드 스와이퍼 (좌우 화살표 활성화)
+                // 💡 전체 선사 카드 스와이퍼 (동적 데이터 인식을 위해 observer 옵션 필수 추가!)
                 const boatSwiper = new Swiper('.boatSwiper', {
                     slidesPerView: 'auto',
                     spaceBetween: 16,
+                    observer: true,           // 💡 UI.js가 나중에 카드를 넣어도 스와이퍼가 이를 감지하게 함
+                    observeParents: true,     // 💡 부모 요소의 변화도 감지
                     navigation: {
                         nextEl: '.swiper-btn-next-boat',
                         prevEl: '.swiper-btn-prev-boat',
                     },
                     breakpoints: { 768: { spaceBetween: 24 } }
-                });
-
-                // 카드 내부 이미지 넘기기용 미니 스와이퍼
-                const innerImageSwipers = new Swiper('.innerImageSwiper', {
-                    loop: true,
-                    nested: true,
-                    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-                    pagination: { el: '.swiper-pagination', clickable: true },
                 });
             }
         });
