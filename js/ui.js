@@ -665,11 +665,10 @@ function buildBoatCardHtml(boat, isIndexPage) {
     let availableSeats = Math.floor(Math.random() * (boat.max_guests - 1)) + 1;
 
     // 2. 숫자에 맞춰 상태값(마감임박 여부) 논리 동기화
-    // DB에서 마감임박으로 되어 있는데 잔여석이 많으면 모순이므로 강제로 1~3석으로 조작
     if (boat.is_closing_soon && availableSeats > 3) {
         availableSeats = Math.floor(Math.random() * 3) + 1; 
     } else if (!boat.is_closing_soon && availableSeats <= 3) {
-        availableSeats = Math.floor(Math.random() * (boat.max_guests - 4)) + 4; // 반대의 경우도 넉넉하게 보정
+        availableSeats = Math.floor(Math.random() * (boat.max_guests - 4)) + 4; 
     }
 
     // 3. 실제 표시할 때 3석 이하만 빨간색(마감임박)으로 표시
@@ -688,10 +687,15 @@ function buildBoatCardHtml(boat, isIndexPage) {
 
     const cardClass = isIndexPage ? "smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all h-full flex flex-col group relative" : "smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col group relative";
 
+    // 💡 핵심 수정: onerror 속성을 추가하여 이미지가 깨질 경우 안전한 외부 이미지로 즉시 대체
+    const fallbackImage = "https://images.unsplash.com/photo-1544329621-e00eb2c300ea?auto=format&fit=crop&q=80&w=800";
+
     return `
         <div class="${cardClass}" onclick="location.href='detail.html?id=${boat.id}'" data-rating="${boat.rating}" data-price="${boat.price}" data-new="${boat.id}">
             <div class="relative ${isIndexPage ? 'h-[220px]' : 'h-[200px]'} bg-slate-100 overflow-hidden">
-                <img src="${boat.image_url}?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                <img src="${boat.image_url}?auto=format&fit=crop&q=80&w=800" 
+                     onerror="this.onerror=null; this.src='${fallbackImage}';" 
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                 <div class="absolute top-4 left-4 flex gap-1.5 z-10 pointer-events-none">
                     <span class="bg-blue-600 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">실시간예약</span>
                     ${closingBadge}
@@ -755,21 +759,33 @@ window.onload = async function() {
     const filterDateEl = document.getElementById('filter-date-btn');
     if (filterDateEl) filterDateEl.innerText = `${String(currentSelectedDate.getMonth()+1).padStart(2,'0')}. ${String(currentSelectedDate.getDate()).padStart(2,'0')}`;
     
+    // 💡 로그인 상태 반영 및 마이페이지 연결 개선
     const token = localStorage.getItem('blueanchor_token');
     const userName = localStorage.getItem('blueanchor_name');
     if(token && userName) {
         const loginLinks = document.querySelectorAll('a');
         loginLinks.forEach(link => {
             if(link.innerText.includes('로그인')) {
-                link.innerHTML = `<i class="fa-solid fa-circle-user text-blue-500"></i> ${userName}님`;
-                link.href = 'javascript:void(0)';
-                link.onclick = function() {
+                // 1. 내 이름을 '마이페이지' 링크로 변경
+                link.innerHTML = `<i class="fa-solid fa-circle-user text-blue-500 text-lg"></i> <span class="font-black text-slate-800">${userName}님</span>`;
+                link.href = 'mypage.html';
+                link.onclick = null; // 기존 로그아웃 얼럿 제거
+                link.title = "마이페이지 (예약 내역 확인)";
+                link.classList.remove('text-slate-600');
+                
+                // 2. 그 옆에 '로그아웃' 버튼 조그맣게 추가
+                const logoutBtn = document.createElement('a');
+                logoutBtn.href = "javascript:void(0)";
+                logoutBtn.className = "text-[11px] font-bold text-slate-400 hover:text-rose-500 ml-3 bg-slate-100 px-2 py-1 rounded-md transition-colors";
+                logoutBtn.innerText = "로그아웃";
+                logoutBtn.onclick = function() {
                     if(confirm('로그아웃 하시겠습니까?')) {
                         localStorage.removeItem('blueanchor_token');
                         localStorage.removeItem('blueanchor_name');
-                        location.reload();
+                        location.href = 'index.html';
                     }
                 };
+                link.parentNode.insertBefore(logoutBtn, link.nextSibling);
             }
         });
     }

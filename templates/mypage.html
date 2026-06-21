@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>마이페이지 - 블루앵커</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] font-sans antialiased text-slate-800 min-h-screen flex flex-col">
+
+    <!-- 상단 네비게이션 -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 w-full z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="index.html" class="flex items-center gap-2 text-blue-600">
+                    <i class="fa-solid fa-anchor text-2xl"></i>
+                    <span class="text-xl font-black tracking-tight">블루앵커</span>
+                </a>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="javascript:void(0)" onclick="logout()" class="text-sm font-bold text-slate-500 hover:text-rose-500 transition-colors">로그아웃</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 py-10 w-full flex-1">
+        <!-- 프로필 헤더 -->
+        <div class="mb-8 flex items-center gap-4">
+            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-black shadow-sm">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-black text-slate-800 tracking-tight"><span id="userName">사용자</span>님의 마이페이지</h1>
+                <p class="text-sm font-medium text-slate-500 mt-1">다가오는 출조 일정을 확인하고 설레는 마음을 준비하세요!</p>
+            </div>
+        </div>
+
+        <!-- 예약 리스트 컨테이너 -->
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-md overflow-hidden">
+            <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center gap-2">
+                <i class="fa-solid fa-ship text-blue-600"></i>
+                <h2 class="text-lg font-black text-slate-800">내 예약 내역</h2>
+            </div>
+            
+            <div id="reservationList" class="p-6 md:p-8 space-y-6">
+                <!-- 로딩 스피너 -->
+                <div class="flex flex-col items-center justify-center py-10 text-slate-400">
+                    <i class="fa-solid fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i>
+                    <span class="font-bold text-sm">예약 정보를 불러오고 있습니다...</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE_URL = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') ? 'http://127.0.0.1:8000' : '';
+
+        // 화면 로딩 시 DB에서 유저의 예약 내역 불러오기
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('blueanchor_token');
+            const name = localStorage.getItem('blueanchor_name');
+            
+            if (!token) {
+                alert("로그인이 필요합니다.");
+                location.href = "login.html";
+                return;
+            }
+
+            if(name) document.getElementById('userName').innerText = name;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/reservation/my`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const reservations = await res.json();
+                    renderReservations(reservations);
+                } else if (res.status === 401) {
+                    alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+                    logout();
+                } else {
+                    document.getElementById('reservationList').innerHTML = `<div class="text-center py-10 font-bold text-rose-500">예약 내역을 불러오지 못했습니다.</div>`;
+                }
+            } catch (error) {
+                console.error("API Error:", error);
+                document.getElementById('reservationList').innerHTML = `<div class="text-center py-10 font-bold text-rose-500">서버 통신 오류가 발생했습니다.</div>`;
+            }
+        });
+
+        // 가져온 예약 내역을 HTML 카드로 만들어주는 함수
+        function renderReservations(reservations) {
+            const container = document.getElementById('reservationList');
+            
+            if (reservations.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-16 text-slate-400">
+                        <i class="fa-regular fa-face-frown text-5xl mb-4 text-slate-300"></i>
+                        <span class="font-bold text-lg text-slate-600 mb-1">아직 예약된 출조가 없습니다.</span>
+                        <span class="text-sm font-medium text-slate-500 mb-6">전국의 멋진 선장님들이 기다리고 계십니다!</span>
+                        <a href="search.html" class="bg-blue-600 text-white font-bold px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm">낚싯배 찾으러 가기</a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            reservations.forEach(r => {
+                html += `
+                    <div class="flex flex-col md:flex-row gap-6 p-5 border border-slate-200 rounded-2xl bg-white hover:border-blue-300 hover:shadow-md transition-all group relative overflow-hidden">
+                        <!-- 상태 뱃지 -->
+                        <div class="absolute top-0 right-0 bg-blue-600 text-white text-[11px] font-bold px-4 py-1.5 rounded-bl-xl shadow-sm z-10">
+                            ${r.status}
+                        </div>
+
+                        <!-- 썸네일 이미지 -->
+                        <div class="w-full md:w-[200px] aspect-[4/3] md:aspect-auto rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                            <img src="${r.boat_image}?auto=format&fit=crop&q=80&w=400" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        </div>
+                        
+                        <!-- 상세 내용 -->
+                        <div class="flex-1 flex flex-col justify-center">
+                            <div class="text-[11px] font-bold text-slate-400 mb-1 tracking-tight">[${r.boat_region}]</div>
+                            <h3 class="text-xl font-black text-slate-800 mb-4">${r.boat_name}</h3>
+                            
+                            <div class="space-y-2 mb-6 border-l-2 border-blue-500 pl-4 bg-blue-50/50 py-2 rounded-r-lg">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[12px] font-bold text-slate-500 w-16">출조일</span>
+                                    <span class="text-[14px] font-black text-blue-600">${r.reserve_date}</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[12px] font-bold text-slate-500 w-16">예약 인원</span>
+                                    <span class="text-[14px] font-bold text-slate-700">${r.guests}명</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[12px] font-bold text-slate-500 w-16">결제 금액</span>
+                                    <span class="text-[14px] font-bold text-slate-700">${r.total_price.toLocaleString()}원</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-auto flex justify-between items-center text-[11px] text-slate-400 font-medium border-t border-slate-100 pt-3">
+                                <span>예약번호: BA-${new Date(r.created_at).getTime()}-${r.id}</span>
+                                <span>결제일시: ${r.created_at}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function logout() {
+            if(confirm("정말 로그아웃 하시겠습니까?")) {
+                localStorage.removeItem('blueanchor_token');
+                localStorage.removeItem('blueanchor_name');
+                location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>

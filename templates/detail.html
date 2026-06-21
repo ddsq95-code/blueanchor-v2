@@ -445,8 +445,17 @@
         const selectedDate = document.getElementById('reserveDate').value;
         const total = unitPrice * reserveGuestCount;
         
+        // 💡 현재 URL에서 boat_id 추출 로직 추가
+        const pathSegments = window.location.pathname.split('/');
+        let boatIdParam = pathSegments[pathSegments.length - 1];
+        if (boatIdParam === 'detail.html') {
+            const urlParams = new URLSearchParams(window.location.search);
+            boatIdParam = urlParams.get('id') || "1";
+        }
+        
         // 결제 페이지로 넘길 예약 데이터 저장 (sessionStorage 활용)
         const bookingData = {
+            boatId: parseInt(boatIdParam), // 💡 DB 예약을 위해 boatId 추가
             boatName: document.getElementById('boatTitle').innerText,
             boatSpec: document.getElementById('boatSpec').innerText,
             date: selectedDate,
