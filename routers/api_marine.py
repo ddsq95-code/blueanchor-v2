@@ -45,6 +45,10 @@ async def get_realtime_marine(obs_code: str = Query(..., description="관측소 
                 
                 if res.status_code == 200:
                     text_data = res.text.strip()
+                    
+                    # 💡 디버깅: 기상청에서 보내는 원본 데이터 중 앞부분을 Render 로그에 출력
+                    print(f"[기상청 API 응답 확인] 부이코드: {stn_code} | 데이터 미리보기: {text_data[:100]}...")
+                    
                     if not ("AUTH_ERROR" in text_data or "ERROR" in text_data or text_data.startswith("[")):
                         lines = text_data.split('\n')
                         header_line = None
@@ -57,12 +61,21 @@ async def get_realtime_marine(obs_code: str = Query(..., description="관측소 
                             headers_list = header_line.replace('#', '').split()
                             data = data_line.split()
                             tw_val, wh_val = "-", "-"
+                            
+                            # 💡 수온 파싱 및 결측치 필터링 강화
                             if 'TW' in headers_list:
                                 tw_idx = headers_list.index('TW')
-                                if tw_idx < len(data) and data[tw_idx] not in ['-99.9', '-9.9', '=']: tw_val = data[tw_idx]
-                            if 'WH' in headers_list:
-                                wh_idx = headers_list.index('WH') + 1
-                                if wh_idx < len(data) and data[wh_idx] not in ['-99.9', '-9.9', '=']: wh_val = data[wh_idx]
+                                if tw_idx < len(data) and data[tw_idx] not in ['-99.9', '-9.9', '-999', '=', '-']: 
+                                    tw_val = data[tw_idx]
+                                else:
+                                    print(f"⚠️ [수온 결측치 발생] 부이 {stn_code} 센서 고장 또는 점검 중. 수신값: {data[tw_idx] if tw_idx < len(data) else '없음'}")
+                            
+                            # 💡 파고(유의 파고: WA) 파싱 버그 수정
+                            if 'WA' in headers_list:
+                                wa_idx = headers_list.index('WA')
+                                if wa_idx < len(data) and data[wa_idx] not in ['-99.9', '-9.9', '-999', '=', '-']: 
+                                    wh_val = data[wa_idx]
+                                    
                             return {"waterTemp": tw_val, "waveHeight": wh_val}
         except Exception as e: 
             print(f"⚠️ 수온 API 통신 에러: {e}")
