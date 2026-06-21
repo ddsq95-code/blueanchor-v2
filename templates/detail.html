@@ -268,7 +268,7 @@
                             <i class="fa-solid fa-location-dot text-blue-600"></i> 오시는 길
                         </h2>
                         
-                        <!-- 💡 카카오맵 컨테이너 -->
+                        <!-- 💡 카카오맵 컨테이너 (에러 방어 적용) -->
                         <div id="mapContainer" class="bg-slate-100 w-full h-48 rounded-xl mb-4 flex items-center justify-center border border-slate-200 overflow-hidden relative shadow-inner z-0">
                             <i class="fa-solid fa-spinner fa-spin text-blue-500 text-2xl"></i>
                         </div>
@@ -390,7 +390,7 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
-<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=a714ae769d5f24681437f90a8c5c326f&libraries=services&autoload=false"></script>
+<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=274cf21d5a9e08a00f9df1b8952b9001&libraries=services&autoload=false"></script>
 
 <script>
     // 전역 변수 세팅 (예약 금액 계산용)
@@ -565,6 +565,8 @@
         document.getElementById("mapAddressText").innerText = searchAddress;
         
         const mapContainer = document.getElementById("mapContainer");
+        
+        // 🔥 카카오맵 로딩 에러 방어 및 직접 보기 링크로 우회 처리
         if (typeof kakao !== 'undefined' && kakao.maps) {
             kakao.maps.load(function() {
                 try {
@@ -580,9 +582,13 @@
                         }
                     });
                 } catch (e) {
-                    mapContainer.innerHTML = '<span class="text-xs text-rose-500 font-bold text-center px-4">카카오맵 설정 오류<br>(도메인 미등록 또는 키 오류)</span>';
+                    // 키 오류나 서비스 객체 접근 불가 시 우회
+                    renderKakaoMapFallback(mapContainer, searchAddress);
                 }
             });
+        } else {
+            // 카카오맵 스크립트 자체가 차단되었을 때 (도메인 미등록 등)
+            renderKakaoMapFallback(mapContainer, searchAddress);
         }
 
         // 💡 전국 기상청 및 해양 API 병렬 패치용 코드 매핑
@@ -618,6 +624,19 @@
             console.error("API 통신 에러");
         }
     });
+    
+    // 카카오맵 에러 발생 시 우회 UI 렌더링 함수
+    function renderKakaoMapFallback(container, address) {
+        const mapUrl = `https://map.kakao.com/link/search/${encodeURIComponent(address)}`;
+        container.innerHTML = `
+            <div class="flex flex-col items-center gap-3">
+                <span class="text-[13px] text-slate-500 font-bold text-center px-4">지도를 바로 불러올 수 없습니다.</span>
+                <a href="${mapUrl}" target="_blank" class="text-[13px] font-bold text-slate-800 bg-[#FEE500] px-4 py-2 rounded-lg hover:bg-[#FADA0A] transition-colors shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-map-location-dot"></i> 카카오맵에서 직접 보기
+                </a>
+            </div>
+        `;
+    }
 
     // 날씨 렌더링
     function renderWeather(data) {
