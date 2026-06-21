@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>파트너 대시보드 - 블루앵커</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="bg-[#F1F5F9] font-sans antialiased text-slate-800 min-h-screen flex flex-col md:flex-row">
+
+    <!-- 좌측 사이드바 (관리자 전용) -->
+    <aside class="w-full md:w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-slate-800">
+            <a href="index.html" class="flex items-center gap-2 text-white hover:text-blue-400 transition-colors">
+                <i class="fa-solid fa-anchor text-xl"></i>
+                <span class="text-lg font-black tracking-tight">블루앵커 <span class="text-[10px] bg-blue-600 px-1.5 py-0.5 rounded ml-1 align-middle">PARTNER</span></span>
+            </a>
+        </div>
+        <nav class="flex-1 py-6 px-4 space-y-2">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold transition-colors">
+                <i class="fa-solid fa-chart-pie w-5"></i> 예약 현황 관리
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 rounded-xl font-medium transition-colors">
+                <i class="fa-solid fa-ship w-5"></i> 내 선사 정보 수정
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 rounded-xl font-medium transition-colors">
+                <i class="fa-solid fa-camera w-5"></i> 오늘의 조황 올리기
+            </a>
+        </nav>
+        <div class="p-4 border-t border-slate-800">
+            <div class="flex items-center gap-3 px-2 py-2">
+                <div class="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center text-white"><i class="fa-solid fa-user-tie text-xs"></i></div>
+                <div>
+                    <p class="text-xs font-bold text-white">마스터 선장님</p>
+                    <p class="text-[10px] text-slate-500">블루오션호</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+        <header class="mb-8">
+            <h1 class="text-2xl font-black text-slate-800 tracking-tight">예약 현황 관리</h1>
+            <p class="text-sm font-medium text-slate-500 mt-1">고객들의 실시간 예약 현황과 명단을 확인하세요.</p>
+        </header>
+
+        <!-- 요약 위젯 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xl"><i class="fa-solid fa-file-signature"></i></div>
+                <div>
+                    <p class="text-xs font-bold text-slate-400 mb-0.5">이번 주 총 예약 건수</p>
+                    <p class="text-2xl font-black text-slate-800" id="stat-count">0<span class="text-sm font-bold text-slate-500 ml-1">건</span></p>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center text-xl"><i class="fa-solid fa-users"></i></div>
+                <div>
+                    <p class="text-xs font-bold text-slate-400 mb-0.5">이번 주 총 탑승 인원</p>
+                    <p class="text-2xl font-black text-slate-800" id="stat-guests">0<span class="text-sm font-bold text-slate-500 ml-1">명</span></p>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl"><i class="fa-solid fa-won-sign"></i></div>
+                <div>
+                    <p class="text-xs font-bold text-slate-400 mb-0.5">예상 총 매출액</p>
+                    <p class="text-2xl font-black text-slate-800" id="stat-revenue">0<span class="text-sm font-bold text-slate-500 ml-1">원</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 예약 명단 테이블 -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h2 class="text-lg font-black text-slate-800">최근 예약 명단</h2>
+                <button class="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors"><i class="fa-solid fa-download mr-1"></i> 엑셀 다운로드</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-[12px] font-bold text-slate-500 border-b border-slate-200">
+                            <th class="p-4 whitespace-nowrap">예약 번호</th>
+                            <th class="p-4 whitespace-nowrap">예약자명</th>
+                            <th class="p-4 whitespace-nowrap">연락처</th>
+                            <th class="p-4 whitespace-nowrap">예약 선사</th>
+                            <th class="p-4 whitespace-nowrap">출조일</th>
+                            <th class="p-4 whitespace-nowrap">인원</th>
+                            <th class="p-4 whitespace-nowrap text-right">결제 금액</th>
+                            <th class="p-4 whitespace-nowrap text-center">상태</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminReservationList" class="text-sm">
+                        <!-- JS로 채워짐 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE_URL = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') ? 'http://127.0.0.1:8000' : '';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const tbody = document.getElementById('adminReservationList');
+            tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 font-bold"><i class="fa-solid fa-spinner fa-spin mr-2"></i>데이터를 불러오는 중입니다...</td></tr>`;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/reservation/admin/all`);
+                if (res.ok) {
+                    const data = await res.json();
+                    renderTable(data);
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-rose-500 font-bold">데이터를 불러오지 못했습니다.</td></tr>`;
+                }
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-rose-500 font-bold">서버 통신 오류가 발생했습니다.</td></tr>`;
+            }
+        });
+
+        function renderTable(data) {
+            const tbody = document.getElementById('adminReservationList');
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 font-bold">아직 접수된 예약 내역이 없습니다.</td></tr>`;
+                return;
+            }
+
+            let totalCount = data.length;
+            let totalGuests = 0;
+            let totalRevenue = 0;
+            let html = '';
+
+            data.forEach((r, idx) => {
+                totalGuests += r.guests;
+                totalRevenue += r.total_price;
+                const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30';
+                
+                html += `
+                    <tr class="${rowBg} border-b border-slate-100 hover:bg-blue-50/50 transition-colors text-[13px]">
+                        <td class="p-4 font-bold text-slate-400">#${r.id}</td>
+                        <td class="p-4 font-black text-slate-800">${r.user_name}</td>
+                        <td class="p-4 font-bold text-slate-600">${r.user_phone}</td>
+                        <td class="p-4 font-bold text-slate-700">${r.boat_name}</td>
+                        <td class="p-4 font-bold text-blue-600">${r.reserve_date}</td>
+                        <td class="p-4 font-bold text-slate-700">${r.guests}명</td>
+                        <td class="p-4 font-black text-slate-800 text-right">${r.total_price.toLocaleString()}원</td>
+                        <td class="p-4 text-center">
+                            <span class="bg-blue-100 text-blue-600 px-2.5 py-1 rounded-md text-[11px] font-bold">${r.status}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+            document.getElementById('stat-count').innerHTML = `${totalCount}<span class="text-sm font-bold text-slate-500 ml-1">건</span>`;
+            document.getElementById('stat-guests').innerHTML = `${totalGuests}<span class="text-sm font-bold text-slate-500 ml-1">명</span>`;
+            document.getElementById('stat-revenue').innerHTML = `${totalRevenue.toLocaleString()}<span class="text-sm font-bold text-slate-500 ml-1">원</span>`;
+        }
+    </script>
+</body>
+</html>

@@ -33,7 +33,6 @@ app.include_router(api_boat.router, prefix="/api/boat", tags=["Boat"])
 app.include_router(api_marine.router, prefix="/api/marine", tags=["Marine"])
 app.include_router(api_weather.router, prefix="/api/weather", tags=["Weather"])
 app.include_router(api_auth.router, prefix="/api/auth", tags=["Auth"])
-# 💡 결제/예약 API 연결! (이 줄이 누락되어서 404 에러가 났을 것입니다)
 app.include_router(api_reservation.router, prefix="/api/reservation", tags=["Reservation"])
 
 # ==========================================
@@ -64,10 +63,14 @@ async def read_signup(request: Request):
 async def read_payment(request: Request):
     return templates.TemplateResponse(request=request, name="payment.html")
 
-# 💡 마이페이지 화면 연결!
 @app.get("/mypage.html", response_class=HTMLResponse)
 async def read_mypage(request: Request):
     return templates.TemplateResponse(request=request, name="mypage.html")
+
+# 💡 선장님 대시보드 화면 연결
+@app.get("/captain.html", response_class=HTMLResponse)
+async def read_captain(request: Request):
+    return templates.TemplateResponse(request=request, name="captain.html")
 
 if __name__ == "__main__":
     import uvicorn
