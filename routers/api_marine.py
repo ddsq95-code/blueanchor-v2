@@ -1,40 +1,22 @@
 # ==========================================
 # 📄 routers/api_marine.py
-# 역할: 조석, 수온, 파고 등 해양 관련 데이터 라우팅
+# 역할: 조석, 수온(해양조사원 조위관측소) 등 해양 데이터 라우팅
 # ==========================================
 
-from fastapi import APIRouter, Response, Query
+from fastapi import APIRouter
 import httpx
 import asyncio
-from core.config import API_KEY, KMA_API_KEY, REGION_MAP, KMA_BUOY_MAP
+from core.config import API_KEY, KMA_API_KEY, REGION_MAP
 from services.api_client import safe_fetch, SEMAPHORE
 
 router = APIRouter()
 
 @router.get("/realtime-marine")
-async def get_realtime_marine(obs_code: str = Query(..., description="관측소 코드"), date_str: str = Query(None), response: Response = None):
-    if response:
-        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-        response.headers["Pragma"] = "no-cache"
-        response.headers["Expires"] = "0"
-
-    SAFE_BUOY_MAP = {
-        "DT_0004": "22215", 
-        "DT_0010": "22102", 
-        "DT_0016": "22103", 
-        "DT_0014": "22104", 
-        "DT_0012": "22216", 
-        "DT_0018": "22185", 
-        "DT_0025": "22105", 
-    }
-
-    stn_code = SAFE_BUOY_MAP.get(obs_code)
-    if not stn_code:
-        stn_code = KMA_BUOY_MAP.get(obs_code)
-    if not stn_code:
-        stn_code = '22105'
-
-    url = f"https://apihub.kma.go.kr/api/typ01/url/kma_buoy.php?stn={stn_code}&help=0&authKey={KMA_API_KEY}"
+async def get_realtime_marine(obs_code: str, date_str: str):
+    # 💡 1. 불안정한 기상청 부이(kma_buoy.php) 제거
+    # 💡 2. 해양조사원(KHOA) 조위관측소 실시간 센서(tide_obs.php)로 전면 교체
+    # obs_code(예: DT_0025 보령)를 그대로 사용하여 정확도 100% 매칭!
+    url = f"https://apihub.kma.go.kr/api/typ01/url/tide_obs.php?stn={obs_code}&help=0&authKey={KMA_API_KEY}"
     
     async with httpx.AsyncClient(verify=False) as client:
         try:
@@ -46,47 +28,39 @@ async def get_realtime_marine(obs_code: str = Query(..., description="관측소 
                 if res.status_code == 200:
                     text_data = res.text.strip()
                     
-                    # 💡 디버깅: 기상청에서 보내는 원본 데이터 중 앞부분을 Render 로그에 출력
-                    print(f"[기상청 API 응답 확인] 부이코드: {stn_code} | 데이터 미리보기: {text_data[:100]}...")
-                    
                     if not ("AUTH_ERROR" in text_data or "ERROR" in text_data or text_data.startswith("[")):
                         lines = text_data.split('\n')
                         header_line = None
                         data_line = None
+                        
+                        # 응답 텍스트에서 헤더와 가장 최신 데이터 줄 추출
                         for line in lines:
-                            if line.startswith('# YYMMDDHHMI'): header_line = line
-                            elif not line.startswith('#') and len(line.strip()) > 0 and not line.strip().startswith('='): data_line = line
+                            if line.startswith('# YYMMDDHHMI'): 
+                                header_line = line
+                            elif not line.startswith('#') and len(line.strip()) > 0 and not line.strip().startswith('='): 
+                                data_line = line
                         
                         if header_line and data_line:
                             headers_list = header_line.replace('#', '').split()
                             data = data_line.split()
-                            tw_val, wh_val = "-", "-"
+                            tw_val = "-"
                             
-                            # 💡 수온 파싱 및 결측치 필터링 강화
+                            # 'TW'(Temperature of Water, 수온) 항목 추출
                             if 'TW' in headers_list:
                                 tw_idx = headers_list.index('TW')
-                                if tw_idx < len(data) and data[tw_idx] not in ['-99.9', '-9.9', '-999', '=', '-']: 
+                                if tw_idx < len(data) and data[tw_idx] not in ['-99.9', '-9.9', '=', '-']: 
                                     tw_val = data[tw_idx]
-                                else:
-                                    print(f"⚠️ [수온 결측치 발생] 부이 {stn_code} 센서 고장 또는 점검 중. 수신값: {data[tw_idx] if tw_idx < len(data) else '없음'}")
                             
-                            # 💡 파고(유의 파고: WA) 파싱 버그 수정
-                            if 'WA' in headers_list:
-                                wa_idx = headers_list.index('WA')
-                                if wa_idx < len(data) and data[wa_idx] not in ['-99.9', '-9.9', '-999', '=', '-']: 
-                                    wh_val = data[wa_idx]
-                                    
-                            return {"waterTemp": tw_val, "waveHeight": wh_val}
+                            # 파고는 프론트엔드에서 기상예보를 사용하므로 '-'로 통일
+                            return {"waterTemp": tw_val, "waveHeight": "-"}
         except Exception as e: 
-            print(f"⚠️ 수온 API 통신 에러: {e}")
+            print(f"⚠️ 해양조사원 수온 API 통신 에러: {e}")
             pass
+            
     return {"waterTemp": "-", "waveHeight": "-"}
 
 @router.get("/daily-data")
-async def get_daily_data(obs_code: str, date_str: str, response: Response = None):
-    if response:
-        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    
+async def get_daily_data(obs_code: str, date_str: str):
     bp = {"serviceKey": API_KEY, "ResultType": "json", "dataType": "JSON", "type": "json", "obsCode": obs_code, "pageNo": "1"}
     loc_name = REGION_MAP.get(obs_code, '보령')
 
