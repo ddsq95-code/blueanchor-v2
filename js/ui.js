@@ -41,6 +41,22 @@ window.showToast = function(message, isError = false) {
     }, 2500);
 };
 
+// 💡 DB 데이터 생성(초기화) 버튼 함수 추가 (복구됨!)
+window.initDatabase = async function() {
+    showToast("데이터를 생성하는 중입니다...");
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/boat/init-db`);
+        if(res.ok) {
+            showToast("데이터 생성 완료! 화면을 새로고침합니다.");
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast("데이터 생성에 실패했습니다.", true);
+        }
+    } catch(e) {
+        showToast("서버와 연결할 수 없습니다.", true);
+    }
+}
+
 // 💡 스켈레톤 로딩 애니메이션 HTML
 function getSkeletonHtml(isIndexPage) {
     const cardClass = isIndexPage ? "w-[300px] md:w-[340px] shrink-0" : "w-full";
@@ -57,15 +73,18 @@ function getSkeletonHtml(isIndexPage) {
     `;
 }
 
-// 💡 데이터가 없을 때 표시할 빈 화면 HTML
+// 💡 데이터가 없을 때 표시할 빈 화면 HTML (초기화 버튼 포함 복구됨!)
 function getEmptyStateHtml() {
     return `
         <div class="col-span-full py-16 px-4 text-center flex flex-col items-center">
-            <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                <i class="fa-solid fa-ship text-3xl text-slate-400"></i>
+            <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                <i class="fa-solid fa-ship text-3xl text-slate-300"></i>
             </div>
             <h3 class="font-black text-slate-800 text-lg mb-1">등록된 선사가 없습니다</h3>
-            <p class="text-sm text-slate-500 font-medium">관리자에게 문의하거나 조건(필터)을 확인해 주세요.</p>
+            <p class="text-sm text-slate-500 font-medium mb-6">현재 데이터베이스가 비어있습니다.</p>
+            <button onclick="initDatabase()" class="bg-blue-600 text-white font-bold px-5 py-2.5 rounded-xl shadow-md active:scale-95 transition-transform">
+                <i class="fa-solid fa-magic"></i> 클릭하여 더미 데이터 생성하기
+            </button>
         </div>
     `;
 }
@@ -930,6 +949,7 @@ window.onload = async function() {
                     }, 100);
                 }
             } else {
+                // 💡 DB가 비었을 때 '데이터 생성' 버튼을 포함한 빈 화면 표시
                 const emptyHtml = getEmptyStateHtml();
                 if(boatListContainerIndex) boatListContainerIndex.innerHTML = emptyHtml;
                 if(boatListMobileGrid) boatListMobileGrid.innerHTML = emptyHtml;

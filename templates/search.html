@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- 💡 강제 다크모드 방지 태그 -->
+    <meta name="color-scheme" content="light">
     <title>배낚시 검색결과 - 블루앵커</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -39,7 +41,8 @@
         .innerImageSwiper .swiper-pagination-bullet-active { background: #fff; opacity: 1; }
     </style>
 </head>
-<body class="bg-slate-50 md:bg-[#F4F6F8] font-sans antialiased text-slate-800 min-h-screen flex flex-col pb-20 md:pb-0">
+<!-- 💡 전체 배경을 화이트(bg-white)로 통일 -->
+<body class="bg-white font-sans antialiased text-slate-800 min-h-screen flex flex-col pb-20 md:pb-0">
 
     <!-- ==========================================
          📱 1. [모바일 전용] 상단 앱 헤더
@@ -49,7 +52,7 @@
             <a href="index.html" class="p-1 -ml-1 text-slate-500 hover:text-slate-800 transition-colors">
                 <i class="fa-solid fa-chevron-left text-xl"></i>
             </a>
-            <div class="flex-1 bg-slate-100 rounded-xl flex items-center px-3 py-2 cursor-pointer" onclick="openSearchModal()">
+            <div class="flex-1 bg-slate-50 rounded-xl flex items-center px-3 py-2 cursor-pointer border border-slate-100" onclick="openSearchModal()">
                 <i class="fa-solid fa-magnifying-glass text-slate-400 mr-2 text-sm"></i>
                 <span class="text-[13px] font-bold text-slate-500">어디로 떠나시나요?</span>
             </div>
@@ -59,7 +62,7 @@
     <!-- ==========================================
          💻 2. [PC 전용] 상단 네비게이션
     =========================================== -->
-    <nav class="bg-white border-b border-slate-200 sticky top-0 w-full z-[60] hidden md:block">
+    <nav class="bg-white border-b border-slate-200 sticky top-0 w-full z-[60] hidden md:block shadow-sm">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-8">
                 <a href="index.html" class="flex items-center gap-2 text-blue-600">
@@ -110,13 +113,13 @@
     </div>
 
     <!-- 4. 메인 레이아웃 (해황 분석 + 선사 리스트) -->
-    <main class="max-w-7xl mx-auto px-4 py-6 md:py-8 flex flex-col lg:flex-row gap-8 w-full flex-1 relative z-30">
+    <main class="max-w-7xl mx-auto px-4 py-6 md:py-8 flex flex-col lg:flex-row gap-8 w-full flex-1 relative z-30 bg-white">
         
         <!-- 좌측: 해황 분석 사이드바 (모바일에선 리스트에 집중하도록 숨김 처리) -->
         <aside class="hidden lg:block w-[340px] shrink-0">
             <div id="sidebarTideCardContainer" class="sticky top-[136px] z-30">
                 <!-- 로딩 스피너 기본값 -->
-                <div class="flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200/80 text-slate-400 py-10 h-full min-h-[300px] shadow-sm">
+                <div class="flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 text-slate-400 py-10 h-full min-h-[300px] shadow-sm">
                     <i class="fa-solid fa-spinner fa-spin text-3xl text-blue-500 mb-3"></i>
                     <span class="text-xs font-bold text-center mt-2">해양 데이터를 분석 중입니다...</span>
                 </div>
