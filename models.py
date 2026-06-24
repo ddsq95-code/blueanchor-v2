@@ -1,34 +1,33 @@
 # ==========================================
 # 📄 models.py
-# 역할: 데이터베이스의 '선사(Boat)' 및 '회원(User)' 테이블 구조 정의
+# 역할: DB 테이블 구조 정의 (선사, 유저, 예약, 찜하기)
 # ==========================================
 
-from sqlalchemy import Column, Integer, String, Float, Boolean
-from core.database import Base
-# 💡 신규: 외래키 및 날짜 처리를 위한 모듈 임포트
-from sqlalchemy import ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
+from core.database import Base
 from datetime import datetime
 
-# 기존 선사 테이블
+# 1. 낚싯배 정보
 class Boat(Base):
     __tablename__ = "boats"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True, nullable=False)
-    region = Column(String, nullable=False)
-    port = Column(String, nullable=False)
+    name = Column(String, index=True)
+    region = Column(String, index=True)
+    port = Column(String)
     tonnage = Column(String)
     max_guests = Column(Integer)
     price = Column(Integer)
-    description = Column(String)
     image_url = Column(String)
-    rating = Column(Float, default=0.0)
     review_count = Column(Integer, default=0)
+    rating = Column(Float, default=0.0)
     tags = Column(String)
     is_closing_soon = Column(Boolean, default=False)
+    available_seats = Column(Integer, default=0) # 실시간 잔여석
+    description = Column(String) # 💡 에러 원인: 이 컬럼이 누락되어 있었습니다!
 
-# 💡 신규: 회원(User) 테이블 추가
+# 2. 회원 정보
 class User(Base):
     __tablename__ = "users"
 
@@ -37,9 +36,9 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     name = Column(String, nullable=False)
     phone = Column(String)
-    token = Column(String, index=True) # 로그인 유지를 위한 인증 토큰
+    token = Column(String, index=True)
 
-# 💡 신규: 예약(Reservation) 테이블 추가
+# 3. 예약 정보
 class Reservation(Base):
     __tablename__ = "reservations"
 
@@ -52,6 +51,17 @@ class Reservation(Base):
     status = Column(String, default="예약완료")
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    # 연결된 유저와 선사 정보를 쉽게 가져오기 위한 관계 설정
+    user = relationship("User")
+    boat = relationship("Boat")
+
+# 4. 찜하기 정보
+class Wishlist(Base):
+    __tablename__ = "wishlists"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    boat_id = Column(Integer, ForeignKey("boats.id"))
+    created_at = Column(DateTime, default=datetime.utcnow)
+
     user = relationship("User")
     boat = relationship("Boat")

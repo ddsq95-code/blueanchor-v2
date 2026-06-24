@@ -9,6 +9,71 @@ let currentObsCode = 'DT_0025';
 const realTimeNow = new Date();
 let currentSelectedDate = new Date(realTimeNow.getFullYear(), realTimeNow.getMonth(), realTimeNow.getDate());
 
+// ==========================================
+// ✨ 1. 앱 전용 고급 UI 요소 (토스트 알림, 스켈레톤, 빈 화면)
+// ==========================================
+
+// 💡 브라우저 기본 alert 대신 예쁜 토스트 알림 표시
+window.showToast = function(message, isError = false) {
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 pointer-events-none';
+        document.body.appendChild(toastContainer);
+    }
+    
+    const toast = document.createElement('div');
+    const icon = isError ? '<i class="fa-solid fa-circle-exclamation text-rose-400"></i>' : '<i class="fa-solid fa-circle-info text-blue-400"></i>';
+    toast.className = 'bg-gray-800 text-white text-[13px] font-bold px-5 py-3 rounded-full shadow-lg transition-all duration-300 transform translate-y-10 opacity-0 flex items-center gap-2 whitespace-nowrap';
+    toast.innerHTML = `${icon} ${message}`;
+    toastContainer.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-10', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+    });
+
+    setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-10', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
+};
+
+// 💡 스켈레톤 로딩 애니메이션 HTML
+function getSkeletonHtml(isIndexPage) {
+    const cardClass = isIndexPage ? "w-[300px] md:w-[340px] shrink-0" : "w-full";
+    return `
+        <div class="${cardClass} bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm animate-pulse flex flex-col h-[340px]">
+            <div class="h-[200px] bg-slate-200 w-full"></div>
+            <div class="p-4 flex flex-col flex-1">
+                <div class="h-4 bg-slate-200 rounded w-1/3 mb-3"></div>
+                <div class="h-6 bg-slate-200 rounded w-2/3 mb-4"></div>
+                <div class="h-4 bg-slate-200 rounded w-1/2 mb-2 mt-auto"></div>
+                <div class="h-8 bg-slate-200 rounded w-full mt-4"></div>
+            </div>
+        </div>
+    `;
+}
+
+// 💡 데이터가 없을 때 표시할 빈 화면 HTML
+function getEmptyStateHtml() {
+    return `
+        <div class="col-span-full py-16 px-4 text-center flex flex-col items-center">
+            <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                <i class="fa-solid fa-ship text-3xl text-slate-400"></i>
+            </div>
+            <h3 class="font-black text-slate-800 text-lg mb-1">등록된 선사가 없습니다</h3>
+            <p class="text-sm text-slate-500 font-medium">관리자에게 문의하거나 조건(필터)을 확인해 주세요.</p>
+        </div>
+    `;
+}
+
+// ==========================================
+// 💡 2. 데이터 및 API 매핑
+// ==========================================
+
 const regionGroups = {
     '서해 중북부': [
         { name: '인천', code: 'DT_0001', lat: 37.451944, lon: 126.592222 },
@@ -660,18 +725,16 @@ function renderTagButtons() {
     if(applyCount) applyCount.innerText = selectedTags.length;
 }
 
+// 💡 스와이퍼(Swiper) 구조를 갖춘 카드 렌더링 함수로 완벽 수정!
 function buildBoatCardHtml(boat, isIndexPage) {
-    // 1. 임시로 랜덤 잔여 좌석 생성 (실제 서비스에서는 DB 값을 써야 함)
     let availableSeats = Math.floor(Math.random() * (boat.max_guests - 1)) + 1;
 
-    // 2. 숫자에 맞춰 상태값(마감임박 여부) 논리 동기화
     if (boat.is_closing_soon && availableSeats > 3) {
         availableSeats = Math.floor(Math.random() * 3) + 1; 
     } else if (!boat.is_closing_soon && availableSeats <= 3) {
         availableSeats = Math.floor(Math.random() * (boat.max_guests - 4)) + 4; 
     }
 
-    // 3. 실제 표시할 때 3석 이하만 빨간색(마감임박)으로 표시
     const actuallyClosing = availableSeats <= 3;
     const closingBadge = actuallyClosing ? `<span class="bg-rose-500 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm animate-pulse">마감임박</span>` : `<span class="bg-amber-500 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">예약가능</span>`;
     const seatColor = actuallyClosing ? 'text-rose-500' : 'text-blue-500';
@@ -686,16 +749,37 @@ function buildBoatCardHtml(boat, isIndexPage) {
     }
 
     const cardClass = isIndexPage ? "smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all h-full flex flex-col group relative" : "smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col group relative";
-
-    // 💡 핵심 수정: onerror 속성을 추가하여 이미지가 깨질 경우 안전한 외부 이미지로 즉시 대체
     const fallbackImage = "https://images.unsplash.com/photo-1544329621-e00eb2c300ea?auto=format&fit=crop&q=80&w=800";
+
+    // 야놀자/어신 스타일의 카드 내부 다중 이미지를 위한 더미 배열
+    const subImages = [
+        boat.image_url,
+        "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647",
+        "https://images.unsplash.com/photo-1583416750470-965b2707b355"
+    ];
+
+    let swiperSlidesHtml = subImages.map(img => `
+        <div class="swiper-slide">
+            <img src="${img}?auto=format&fit=crop&q=80&w=800" 
+                 onerror="this.onerror=null; this.src='${fallbackImage}';" 
+                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+        </div>
+    `).join('');
 
     return `
         <div class="${cardClass}" onclick="location.href='detail.html?id=${boat.id}'" data-rating="${boat.rating}" data-price="${boat.price}" data-new="${boat.id}">
-            <div class="relative ${isIndexPage ? 'h-[220px]' : 'h-[200px]'} bg-slate-100 overflow-hidden">
-                <img src="${boat.image_url}?auto=format&fit=crop&q=80&w=800" 
-                     onerror="this.onerror=null; this.src='${fallbackImage}';" 
-                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="relative ${isIndexPage ? 'h-[220px]' : 'h-[200px]'} bg-slate-100 overflow-hidden group">
+                
+                <!-- 💡 카드 내부 다중 이미지 스와이퍼 HTML 구조 추가 -->
+                <div class="swiper innerImageSwiper w-full h-full absolute inset-0 z-0">
+                    <div class="swiper-wrapper">
+                        ${swiperSlidesHtml}
+                    </div>
+                    <div class="swiper-pagination z-10" onclick="event.stopPropagation()"></div>
+                    <div class="swiper-button-prev z-10" onclick="event.stopPropagation()"></div>
+                    <div class="swiper-button-next z-10" onclick="event.stopPropagation()"></div>
+                </div>
+
                 <div class="absolute top-4 left-4 flex gap-1.5 z-10 pointer-events-none">
                     <span class="bg-blue-600 text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-sm">실시간예약</span>
                     ${closingBadge}
@@ -705,9 +789,13 @@ function buildBoatCardHtml(boat, isIndexPage) {
                         <i class="fa-solid fa-anchor text-[10px]"></i> ${boat.tonnage}
                     </span>
                 </div>
+                
+                <button type="button" class="wishlist-btn absolute bottom-4 left-4 w-9 h-9 bg-black/30 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center transition-all hover:bg-rose-500/90 hover:scale-110 z-20" data-boat-id="${boat.id}">
+                    <i class="fa-regular fa-heart text-white text-[17px] mt-[1px] drop-shadow-md"></i>
+                </button>
             </div>
             
-            <div class="${isIndexPage ? 'p-5' : 'p-4'} flex flex-col flex-1">
+            <div class="${isIndexPage ? 'p-5' : 'p-4'} flex flex-col flex-1 relative z-10 bg-white">
                 ${!isIndexPage ? `<div class="text-[11px] font-bold text-slate-400 mb-1 tracking-tight">[${boat.region}]</div>` : ''}
                 <div class="flex justify-between items-center mb-2">
                     <h3 class="${isIndexPage ? 'text-[20px]' : 'text-[17px]'} font-black text-slate-800 tracking-tight">${boat.name}</h3>
@@ -727,7 +815,6 @@ function buildBoatCardHtml(boat, isIndexPage) {
                             <span class="font-bold text-[15px] text-slate-800">010-0000-0000</span>
                         </div>
                         <div class="flex items-center gap-1.5 ml-auto">
-                            <!-- 밴드, 인스타 링크 -->
                             <a href="https://band.us" target="_blank" onclick="event.stopPropagation()" class="w-6 h-6 flex items-center justify-center rounded bg-[#03C75A]/10 text-[#03C75A] hover:bg-[#03C75A] hover:text-white transition-colors" title="네이버 밴드"><span class="font-black text-[11px]">B</span></a>
                             <a href="https://instagram.com" target="_blank" onclick="event.stopPropagation()" class="w-6 h-6 flex items-center justify-center rounded bg-pink-50 text-pink-500 hover:bg-gradient-to-tr hover:from-yellow-400 hover:via-pink-500 hover:to-purple-500 hover:text-white transition-all" title="인스타그램"><i class="fa-brands fa-instagram text-[13px]"></i></a>
                         </div>
@@ -752,6 +839,9 @@ function buildBoatCardHtml(boat, isIndexPage) {
     `;
 }
 
+// ==========================================
+// 💡 화면 로드 시 실행 (스켈레톤 및 API 데이터 렌더링)
+// ==========================================
 window.onload = async function() {
     const barDateEl = document.getElementById('barDate');
     if (barDateEl) barDateEl.innerText = `${currentSelectedDate.getFullYear()}. ${String(currentSelectedDate.getMonth()+1).padStart(2,'0')}. ${String(currentSelectedDate.getDate()).padStart(2,'0')}`;
@@ -759,21 +849,19 @@ window.onload = async function() {
     const filterDateEl = document.getElementById('filter-date-btn');
     if (filterDateEl) filterDateEl.innerText = `${String(currentSelectedDate.getMonth()+1).padStart(2,'0')}. ${String(currentSelectedDate.getDate()).padStart(2,'0')}`;
     
-    // 💡 로그인 상태 반영 및 마이페이지 연결 개선
+    // 로그인 상태 반영
     const token = localStorage.getItem('blueanchor_token');
     const userName = localStorage.getItem('blueanchor_name');
     if(token && userName) {
         const loginLinks = document.querySelectorAll('a');
         loginLinks.forEach(link => {
             if(link.innerText.includes('로그인')) {
-                // 1. 내 이름을 '마이페이지' 링크로 변경
                 link.innerHTML = `<i class="fa-solid fa-circle-user text-blue-500 text-lg"></i> <span class="font-black text-slate-800">${userName}님</span>`;
                 link.href = 'mypage.html';
-                link.onclick = null; // 기존 로그아웃 얼럿 제거
+                link.onclick = null;
                 link.title = "마이페이지 (예약 내역 확인)";
                 link.classList.remove('text-slate-600');
                 
-                // 2. 그 옆에 '로그아웃' 버튼 조그맣게 추가
                 const logoutBtn = document.createElement('a');
                 logoutBtn.href = "javascript:void(0)";
                 logoutBtn.className = "text-[11px] font-bold text-slate-400 hover:text-rose-500 ml-3 bg-slate-100 px-2 py-1 rounded-md transition-colors";
@@ -793,67 +881,158 @@ window.onload = async function() {
     if (typeof window.updateWishlistUI === 'function') window.updateWishlistUI();
     updateSidebarSeaCondition();
 
+    const boatListContainerIndex = document.getElementById('boat-list-swiper-wrapper');
+    const boatListContainerSearch = document.getElementById('boat-list-grid');
+    const boatListMobileGrid = document.getElementById('boat-list-mobile-grid');
+
+    const skeletonHtmlIndex = Array(3).fill(0).map(() => getSkeletonHtml(true)).join('');
+    const skeletonHtmlGrid = Array(4).fill(0).map(() => getSkeletonHtml(false)).join('');
+    
+    if (boatListContainerIndex) boatListContainerIndex.innerHTML = skeletonHtmlIndex;
+    if (boatListContainerSearch) boatListContainerSearch.innerHTML = skeletonHtmlGrid;
+    if (boatListMobileGrid) boatListMobileGrid.innerHTML = skeletonHtmlGrid;
+
     try {
         const res = await fetch(`${API_BASE_URL}/api/boat/list`);
         if (res.ok) {
             const boats = await res.json();
-            const boatListContainerIndex = document.getElementById('boat-list-swiper-wrapper');
-            const boatListContainerSearch = document.getElementById('boat-list-grid');
-
+            
             if (boats.length > 0) {
                 if (boatListContainerIndex) {
                     boatListContainerIndex.innerHTML = boats.map(boat => `<div class="swiper-slide w-[300px] md:w-[340px]">${buildBoatCardHtml(boat, true)}</div>`).join('');
-                    if (typeof Swiper !== 'undefined') {
-                        const swiperEl = document.querySelector('.boatSwiper');
-                        if (swiperEl && swiperEl.swiper) {
-                            swiperEl.swiper.update();
-                        }
-                    }
                 }
+                
+                // 모바일 세로 그리드 렌더링
+                if (boatListMobileGrid) {
+                    boatListMobileGrid.innerHTML = boats.map(boat => buildBoatCardHtml(boat, false)).join('');
+                }
+
+                // 통합 검색 그리드 렌더링
                 if (boatListContainerSearch) {
                     boatListContainerSearch.innerHTML = boats.map(boat => buildBoatCardHtml(boat, false)).join('');
+                    const countText = document.getElementById('total-boat-count') || document.querySelector('.mb-6 p.text-[13px].font-bold.text-slate-500');
+                    if(countText && countText.innerText.includes('예약 가능합니다')) countText.innerText = `총 ${boats.length}척의 낚싯배가 예약 가능합니다`;
+                }
+
+                // 💡 생성된 모든 스와이퍼(부모 + 자식) 명시적 초기화 및 업데이트
+                if (typeof Swiper !== 'undefined') {
+                    const parentSwiperEl = document.querySelector('.boatSwiper');
+                    if (parentSwiperEl && parentSwiperEl.swiper) parentSwiperEl.swiper.update();
+                    
+                    // 내부 이미지 스와이퍼 초기화 (DOM 생성 이후 안전하게 실행되도록 setTimeout 사용)
+                    setTimeout(() => {
+                        new Swiper('.innerImageSwiper', {
+                            loop: true,
+                            nested: true, // 가로 스크롤 충돌 방지 핵심 옵션
+                            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+                            pagination: { el: '.swiper-pagination', clickable: true },
+                        });
+                    }, 100);
                 }
             } else {
-                if(boatListContainerIndex) boatListContainerIndex.innerHTML = `<div class="text-center p-10 text-slate-500 w-full">등록된 선사가 없습니다. (DB 확인 필요)</div>`;
-                if(boatListContainerSearch) boatListContainerSearch.innerHTML = `<div class="col-span-full text-center p-10 text-slate-500">등록된 선사가 없습니다. (DB 확인 필요)</div>`;
+                const emptyHtml = getEmptyStateHtml();
+                if(boatListContainerIndex) boatListContainerIndex.innerHTML = emptyHtml;
+                if(boatListMobileGrid) boatListMobileGrid.innerHTML = emptyHtml;
+                if(boatListContainerSearch) boatListContainerSearch.innerHTML = emptyHtml;
             }
         }
     } catch (e) {
         console.error("DB 로딩 에러:", e);
+        const errHtml = `<div class="col-span-full py-10 text-center text-rose-500 font-bold">서버 통신 중 에러가 발생했습니다.</div>`;
+        if(boatListContainerIndex) boatListContainerIndex.innerHTML = errHtml;
+        if(boatListMobileGrid) boatListMobileGrid.innerHTML = errHtml;
+        if(boatListContainerSearch) boatListContainerSearch.innerHTML = errHtml;
     }
 };
 
-window.updateWishlistUI = function() {
-    let wishlist = JSON.parse(localStorage.getItem('blueanchor_wishlist')) || [];
-    const countBadge = document.getElementById('wishlistCount');
-    if(countBadge) {
-        countBadge.innerText = wishlist.length;
-        if(wishlist.length > 0) countBadge.classList.remove('hidden');
-        else countBadge.classList.add('hidden');
-    }
-    document.querySelectorAll('.wishlist-btn').forEach(btn => {
-        const boatId = btn.getAttribute('data-boat-id');
-        const icon = btn.querySelector('i');
-        if(icon) {
-            icon.className = wishlist.includes(boatId) ? 'fa-solid fa-heart text-[22px] text-rose-500 drop-shadow-md' : 'fa-regular fa-heart text-[22px] text-white drop-shadow-md';
+// ==========================================
+// 💡 3. 찜하기 API 연동 (토스트 알림 적용)
+// ==========================================
+window.updateWishlistUI = async function() {
+    const token = localStorage.getItem('blueanchor_token');
+    if (!token) return;
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/wishlist/my`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (res.ok) {
+            const wishes = await res.json();
+            const wishedBoatIds = wishes.map(w => String(w.id));
+            
+            const countBadge = document.getElementById('wishlistCount');
+            const mobileBadge = document.getElementById('mobileWishlistCount');
+            
+            if (countBadge) {
+                countBadge.innerText = wishedBoatIds.length;
+                if (wishedBoatIds.length > 0) countBadge.classList.remove('hidden');
+                else countBadge.classList.add('hidden');
+            }
+            if (mobileBadge) {
+                mobileBadge.innerText = wishedBoatIds.length;
+                if (wishedBoatIds.length > 0) mobileBadge.classList.remove('hidden');
+                else mobileBadge.classList.add('hidden');
+            }
+
+            document.querySelectorAll('.wishlist-btn').forEach(btn => {
+                const id = btn.getAttribute('data-boat-id');
+                const icon = btn.querySelector('i');
+                if(icon) {
+                    icon.className = wishedBoatIds.includes(id) 
+                        ? 'fa-solid fa-heart text-[22px] text-rose-500 drop-shadow-md transition-colors' 
+                        : 'fa-regular fa-heart text-[22px] text-white drop-shadow-md transition-colors';
+                }
+            });
         }
-    });
+    } catch (err) {
+        console.error("Wishlist load error:", err);
+    }
 };
 
 document.addEventListener("DOMContentLoaded", function() {
-    document.body.addEventListener('click', function(e) {
+    document.body.addEventListener('click', async function(e) {
         const wishlistBtn = e.target.closest('.wishlist-btn');
         if(wishlistBtn) {
             e.stopPropagation();
+            e.preventDefault();
+            
             const boatId = wishlistBtn.getAttribute('data-boat-id');
             if(!boatId) return;
 
-            let wishlist = JSON.parse(localStorage.getItem('blueanchor_wishlist')) || [];
-            if(wishlist.includes(boatId)) wishlist = wishlist.filter(id => id !== boatId);
-            else wishlist.push(boatId);
-            localStorage.setItem('blueanchor_wishlist', JSON.stringify(wishlist));
-            window.updateWishlistUI();
-            return;
+            const token = localStorage.getItem('blueanchor_token');
+            if (!token) {
+                showToast("로그인이 필요한 서비스입니다.");
+                setTimeout(() => location.href = 'login.html', 1500);
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/wishlist/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ boat_id: parseInt(boatId) })
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.is_wished) {
+                        showToast("❤️ 찜 목록에 추가되었습니다.");
+                    } else {
+                        showToast("🤍 찜하기가 취소되었습니다.");
+                    }
+                    window.updateWishlistUI();
+                } else if (res.status === 401) {
+                    showToast("로그인이 만료되었습니다.", true);
+                    setTimeout(() => location.href = 'login.html', 1500);
+                }
+            } catch (err) {
+                console.error("Wishlist toggle error:", err);
+                showToast("서버 통신 중 오류가 발생했습니다.", true);
+            }
         }
     });
 });

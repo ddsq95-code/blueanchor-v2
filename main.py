@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 # 💡 우리가 만든 라우터(기능)들 불러오기
-from routers import api_boat, api_marine, api_weather, api_auth, api_reservation
+from routers import api_boat, api_marine, api_weather, api_auth, api_reservation, api_wishlist
 from core.database import engine
 import models
 
@@ -34,6 +34,8 @@ app.include_router(api_marine.router, prefix="/api/marine", tags=["Marine"])
 app.include_router(api_weather.router, prefix="/api/weather", tags=["Weather"])
 app.include_router(api_auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(api_reservation.router, prefix="/api/reservation", tags=["Reservation"])
+# 💡 신규: 찜하기(위시리스트) API 연결!
+app.include_router(api_wishlist.router, prefix="/api/wishlist", tags=["Wishlist"])
 
 # ==========================================
 # 🌐 프론트엔드 HTML 화면 연결
@@ -67,7 +69,6 @@ async def read_payment(request: Request):
 async def read_mypage(request: Request):
     return templates.TemplateResponse(request=request, name="mypage.html")
 
-# 💡 선장님 대시보드 화면 연결
 @app.get("/captain.html", response_class=HTMLResponse)
 async def read_captain(request: Request):
     return templates.TemplateResponse(request=request, name="captain.html")
