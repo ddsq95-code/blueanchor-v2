@@ -91,41 +91,41 @@
             </div>
         </div>
 
-        <!-- 모바일 날씨 위젯 -->
+        <!-- 💡 수정된 부분: 모바일 날씨 위젯 (물때 추가 4칸 배열) -->
         <div class="mt-4 px-4 relative z-20 bg-white">
             <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="font-bold text-slate-800 flex items-center gap-1.5 text-[14px]">
-                        <i class="fa-solid fa-location-dot text-blue-500"></i> 부산 해운대구 날씨
+                        <i class="fa-solid fa-location-dot text-blue-500"></i> <span id="mobile-weather-region">보령</span> 날씨
                     </h3>
-                    <span class="text-[10px] bg-white border border-slate-200 text-slate-500 px-2.5 py-0.5 rounded-full font-bold shadow-sm">실시간</span>
+                    <span class="text-[10px] bg-blue-50 border border-blue-100 text-blue-600 px-2.5 py-0.5 rounded-full font-bold shadow-sm">실시간</span>
                 </div>
-                <div class="grid grid-cols-3 gap-3">
+                <div class="grid grid-cols-4 gap-2">
                     <div class="flex flex-col items-center justify-center bg-white rounded-xl py-3 shadow-sm border border-slate-100">
-                        <i class="fa-solid fa-cloud text-slate-400 mb-2 text-2xl"></i>
-                        <span class="text-[11px] font-bold text-slate-500 tracking-tight mb-0.5">맑음</span>
-                        <span class="text-[15px] font-black text-slate-800">22°C</span>
+                        <i id="mobile-weather-icon" class="fa-solid fa-cloud text-slate-400 mb-2 text-xl"></i>
+                        <span id="mobile-weather-cond" class="text-[10px] font-bold text-slate-500 tracking-tight mb-0.5">조회중</span>
+                        <span id="mobile-weather-temp" class="text-[14px] font-black text-slate-800">-</span>
                     </div>
                     <div class="flex flex-col items-center justify-center bg-white rounded-xl py-3 shadow-sm border border-slate-100">
-                        <i class="fa-solid fa-wind text-teal-400 mb-2 text-2xl"></i>
-                        <span class="text-[11px] font-bold text-slate-500 tracking-tight mb-0.5">풍속</span>
-                        <span class="text-[15px] font-black text-slate-800">4m/s</span>
+                        <i class="fa-solid fa-wind text-teal-400 mb-2 text-xl"></i>
+                        <span class="text-[10px] font-bold text-slate-500 tracking-tight mb-0.5">풍속</span>
+                        <span id="mobile-weather-wind" class="text-[14px] font-black text-slate-800">-</span>
                     </div>
                     <div class="flex flex-col items-center justify-center bg-white rounded-xl py-3 shadow-sm border border-slate-100">
-                        <i class="fa-solid fa-water text-blue-500 mb-2 text-2xl"></i>
-                        <span class="text-[11px] font-bold text-slate-500 tracking-tight mb-0.5">파고</span>
-                        <span class="text-[15px] font-black text-slate-800">0.5m</span>
+                        <i class="fa-solid fa-water text-blue-500 mb-2 text-xl"></i>
+                        <span class="text-[10px] font-bold text-slate-500 tracking-tight mb-0.5">파고</span>
+                        <span id="mobile-weather-wave" class="text-[14px] font-black text-slate-800">-</span>
+                    </div>
+                    <div class="flex flex-col items-center justify-center bg-blue-50 rounded-xl py-3 shadow-sm border border-blue-100">
+                        <i class="fa-solid fa-droplet text-blue-600 mb-2 text-xl"></i>
+                        <span class="text-[10px] font-bold text-blue-600 tracking-tight mb-0.5">물때</span>
+                        <span id="mobile-weather-tide" class="text-[13px] font-black text-blue-800 tracking-tighter">-</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 💡 모바일 추천 선박 리스트 -->
-        <div class="px-4 mt-10 bg-white">
-            <div class="flex items-end justify-between mb-4">
-                <div>
-                    <h2 class="text-xl font-black text-slate-800 tracking-tight">추천 선박</h2>
-                    <p class="text-xs font-medium text-slate-500 mt-1">지금 인기있는 리스트</p>
+        <!-- 모바일 추천 선박 리스트 -->
                 </div>
                 <button onclick="location.href='search.html'" class="text-blue-600 font-bold text-[12px] flex items-center gap-1 border border-blue-100 bg-blue-50 px-2.5 py-1.5 rounded-lg">
                     전체보기 <i class="fa-solid fa-chevron-right text-[10px]"></i>
@@ -253,7 +253,9 @@
                 <!-- 모달 내용은 기존과 동일하므로 생략 없이 렌더링 -->
                 <div class="space-y-4">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100"><h3 class="font-bold text-slate-700 mb-4"><i class="fa-regular fa-calendar-check text-blue-500 mr-1"></i>출조 날짜</h3><div id="calendarContainer"></div></div>
-                    <div id="tideCardContainer" class="w-full h-full min-h-[350px]"></div>
+                    
+                    <!-- 💡 수정된 부분: 모바일 환경(hidden)에서는 물때표를 숨기고 PC(md:block)에서만 보여줌 -->
+                    <div id="tideCardContainer" class="hidden md:block w-full h-full min-h-[350px]"></div>
                 </div>
                 <div class="bg-white p-5 rounded-2xl shadow-sm flex flex-col border border-slate-100">
                     <h3 class="font-bold text-slate-700 mb-4 shrink-0"><i class="fa-solid fa-map-location-dot text-blue-500 mr-1"></i>출항 지역</h3>

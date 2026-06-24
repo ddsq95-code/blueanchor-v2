@@ -568,6 +568,50 @@ async function updateSidebarSeaCondition() {
     container.innerHTML = await fetchAndBuildTideCardHtml(currentSelectedDate, currentObsCode, rName);
 }
 
+// 💡 신규 추가: 메인 화면 모바일 전용 날씨/물때 위젯 업데이트 함수
+async function updateMobileWeatherWidget() {
+    const regionEl = document.getElementById('mobile-weather-region');
+    if (!regionEl) return; // 메인 페이지가 아니면 실행 안 함
+    
+    const regionName = '보령'; // 현재는 기본 지역인 보령 기준으로 설정 (추후 위치 기반으로 확장 가능)
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
+    const weatherRegion = getWeatherRegionName(regionName);
+    
+    // 1. 오늘 날짜 기반으로 물때 자동 계산 (좁은 화면을 위해 '사리' 등 부가 설명은 제거)
+    const tide = getTideDetail(today);
+    document.getElementById('mobile-weather-tide').innerText = tide.name.replace('(사리)', '').trim();
+    
+    // 2. 기상청 날씨 데이터 호출 및 연동
+    try {
+        const shortData = await safeFetchShortTermWeather(weatherRegion);
+        const dayData = shortData.filter(d => d.date === dateStr);
+        let rep = dayData.find(d => parseInt(d.time.split(':')[0]) >= 12);
+        if(!rep && dayData.length > 0) rep = dayData[dayData.length - 1];
+
+        if(rep && rep.tmp && rep.tmp !== '-') {
+            let wIconClass = 'fa-solid fa-sun text-rose-400';
+            let condText = '맑음';
+            
+            if (rep.pty !== '0') {
+                wIconClass = 'fa-solid fa-cloud-showers-water text-blue-500';
+                condText = '비';
+            } else if (rep.sky === '3' || rep.sky === '4') {
+                wIconClass = 'fa-solid fa-cloud text-slate-400';
+                condText = '흐림';
+            }
+            
+            document.getElementById('mobile-weather-icon').className = `${wIconClass} mb-2 text-xl`;
+            document.getElementById('mobile-weather-cond').innerText = condText;
+            document.getElementById('mobile-weather-temp').innerText = `${rep.tmp}°C`;
+            document.getElementById('mobile-weather-wind').innerText = `${rep.wsd}m/s`;
+            document.getElementById('mobile-weather-wave').innerText = (rep.wav === '-' || rep.wav === '0') ? '0.5m' : `${rep.wav}m`;
+        }
+    } catch(e) {
+        console.error("모바일 날씨 위젯 로딩 실패", e);
+    }
+}
+
 function renderRegionTabs() {
     const container = document.getElementById('regionTabs');
     if(container) {
@@ -899,6 +943,9 @@ window.onload = async function() {
 
     if (typeof window.updateWishlistUI === 'function') window.updateWishlistUI();
     updateSidebarSeaCondition();
+    
+    // 💡 신규 추가: 화면이 로드될 때 모바일 날씨 위젯 함수도 함께 실행
+    updateMobileWeatherWidget();
 
     const boatListContainerIndex = document.getElementById('boat-list-swiper-wrapper');
     const boatListContainerSearch = document.getElementById('boat-list-grid');
