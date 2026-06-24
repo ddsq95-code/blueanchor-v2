@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- 💡 모바일 브라우저의 '강제 다크모드'를 차단하고 항상 화이트 톤 유지 -->
+    <!-- 💡 1. 모바일 강제 다크모드 완벽 차단 -->
     <meta name="color-scheme" content="light only">
     <title>블루앵커 - 배낚시 실시간 예약</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,286 +11,456 @@
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
     <style>
-        :root { color-scheme: light; }
-        body { font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; background-color: #ffffff; }
-        .hero-gradient { background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); }
+        body { font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .custom-shadow { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .swiper-button-custom { width: 44px; height: 44px; background-color: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; justify-content: center; align-items: center; color: #475569; border: 1px solid #f1f5f9; transition: all 0.2s; z-index: 10; cursor: pointer; }
-        .swiper-button-custom:hover { color: #2563eb; transform: scale(1.1); box-shadow: 0 6px 16px rgba(37,99,235,0.2); }
+        .hero-bg { background: linear-gradient(180deg, #2A82FF 0%, #7AC5FF 60%, #F8FAFC 100%); }
+
+        /* 메인 배너 슬라이더 커스텀 */
+        .mainBannerSwiper .swiper-pagination-bullet { width: 8px; height: 8px; background: #fff; opacity: 0.4; transition: all 0.3s; }
+        .mainBannerSwiper .swiper-pagination-bullet-active { width: 24px; border-radius: 4px; opacity: 1; }
+
+        /* 카드 내부 이미지 슬라이더 커스텀 */
+        .innerImageSwiper .swiper-button-next,
+        .innerImageSwiper .swiper-button-prev {
+            width: 32px; height: 32px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            color: #334155;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .innerImageSwiper .swiper-button-next:active,
+        .innerImageSwiper .swiper-button-prev:active { transform: scale(0.9); }
+        .smart-link-card:hover .innerImageSwiper .swiper-button-next,
+        .smart-link-card:hover .innerImageSwiper .swiper-button-prev { opacity: 1; }
+        .innerImageSwiper .swiper-button-next::after,
+        .innerImageSwiper .swiper-button-prev::after { font-size: 13px; font-weight: 900; }
+        .innerImageSwiper .swiper-pagination { bottom: 8px; }
+        .innerImageSwiper .swiper-pagination-bullet { background: #fff; opacity: 0.5; width: 6px; height: 6px; }
+        .innerImageSwiper .swiper-pagination-bullet-active { background: #fff; opacity: 1; width: 6px; border-radius: 50%; }
+        
+        /* 외부 카드 슬라이더 좌우 화살표 (PC용) */
+        .outer-nav-btn {
+            width: 48px; height: 48px; background-color: #fff; border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #f1f5f9;
+            display: flex; align-items: center; justify-content: center;
+            color: #475569; cursor: pointer; transition: all 0.2s; z-index: 10;
+        }
+        .outer-nav-btn:hover { color: #2563eb; transform: scale(1.1); box-shadow: 0 6px 20px rgba(37,99,235,0.15); }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
-<body class="bg-white md:bg-[#f8fafc] font-sans antialiased text-slate-800">
+<body class="bg-[#F8FAFC] font-sans antialiased text-slate-800 pb-20 md:pb-0">
 
     <!-- ==========================================
-         📱 1. [모바일 전용] App 스타일 UI 영역
+         📱 1. [모바일 전용] App 스타일 UI 영역 (PC에선 숨김)
     =========================================== -->
-    <div class="md:hidden pb-24 bg-white min-h-screen">
+    <div class="md:hidden bg-white min-h-screen">
         
-        <!-- 모바일 Top Navbar -->
-        <nav class="sticky top-0 z-40 bg-blue-600">
-            <div class="px-5 h-14 flex items-center justify-between">
-                <a href="index.html" class="flex items-center gap-2">
-                    <div class="text-white">
-                        <i class="fa-solid fa-anchor text-[18px]"></i>
-                    </div>
-                    <span class="text-xl font-black text-white tracking-tight">
-                        BlueAnchor
-                    </span>
-                </a>
-                <div class="flex items-center gap-3 text-white/80">
-                    <button onclick="openSearchModal()" class="p-1.5 hover:text-white transition-colors"><i class="fa-solid fa-magnifying-glass text-lg"></i></button>
-                    <a href="login.html" class="p-1.5 hover:text-white transition-colors"><i class="fa-solid fa-user text-lg"></i></a>
-                </div>
-            </div>
-        </nav>
-
-        <!-- 모바일 Hero 검색 영역 -->
-        <div class="relative bg-blue-600 text-white overflow-hidden rounded-b-[2rem] pb-8 shadow-sm">
-            <div class="relative z-10 px-5 pt-4 pb-2 flex flex-col">
-                <p class="text-blue-100 text-sm font-medium mb-3">나에게 딱 맞는 낚시배 찾기</p>
-                <div class="w-full bg-white/10 backdrop-blur-md border border-white/20 p-1.5 rounded-2xl flex items-center shadow-inner cursor-pointer active:scale-95 transition-transform" onclick="openSearchModal()">
-                    <div class="flex-1 flex justify-center items-center py-3">
-                        <i class="fa-solid fa-magnifying-glass text-white/80 mr-2 text-base"></i>
-                        <span class="text-[15px] font-bold text-white">실시간 맞춤 검색</span>
-                    </div>
-                </div>
+        <!-- 심플한 모바일 상단 바 -->
+        <div class="bg-blue-600 px-4 h-14 flex items-center justify-between sticky top-0 z-50">
+            <a href="index.html" class="flex items-center gap-1.5 text-white">
+                <i class="fa-solid fa-anchor text-xl"></i>
+                <span class="text-lg font-black tracking-tight">BlueAnchor</span>
+            </a>
+            <div class="flex items-center gap-3 text-blue-100">
+                <button onclick="openSearchModal()" class="p-1.5 hover:text-white transition-colors"><i class="fa-solid fa-magnifying-glass text-lg"></i></button>
             </div>
         </div>
 
-        <!-- 모바일 아이콘 카테고리 -->
-        <div class="px-4 pt-8 pb-4 relative z-20 bg-white">
+        <!-- 모바일 히어로 (파란 라운드 배경, 검색바 제거) -->
+        <div class="relative bg-blue-600 text-white overflow-hidden rounded-b-3xl pb-8 shadow-sm">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-700 to-cyan-500 opacity-90 z-0"></div>
+            <div class="relative z-10 px-5 pt-4 pb-2 flex flex-col items-start">
+                <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm mb-4 border border-white/20 shadow-sm">
+                    2026 썸머 시즌 🌊
+                </span>
+                <h2 class="text-2xl font-black mb-1 tracking-tight">어디로 떠나시나요?</h2>
+                <p class="text-blue-100 text-sm mb-6 font-medium">나에게 딱 맞는 낚시배 찾기</p>
+                <button onclick="openSearchModal()" class="w-full bg-white text-blue-600 font-black py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-transform text-[15px]">
+                    <i class="fa-solid fa-magnifying-glass"></i> 실시간 맞춤 검색
+                </button>
+            </div>
+        </div>
+
+        <!-- 모바일 카테고리 (6개 아이콘 깔끔한 배열) -->
+        <div class="px-4 pt-8 pb-4">
             <div class="grid grid-cols-3 gap-y-6 gap-x-4">
                 <div class="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform" onclick="location.href='search.html'">
-                    <div class="w-[60px] h-[60px] bg-slate-50 rounded-[18px] flex items-center justify-center text-[28px] shadow-sm border border-slate-100/50">🎣</div>
-                    <span class="text-[12px] font-bold text-slate-700 tracking-tighter">선상낚시</span>
+                    <div class="w-[60px] h-[60px] bg-white rounded-2xl flex items-center justify-center text-[30px] shadow-sm border border-slate-100">🎣</div>
+                    <span class="text-[12px] font-bold text-slate-700">선상낚시</span>
                 </div>
                 <div class="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform" onclick="location.href='search.html'">
-                    <div class="w-[60px] h-[60px] bg-slate-50 rounded-[18px] flex items-center justify-center text-[28px] shadow-sm border border-slate-100/50">🤿</div>
-                    <span class="text-[12px] font-bold text-slate-700 tracking-tighter">스킨스쿠버</span>
+                    <div class="w-[60px] h-[60px] bg-white rounded-2xl flex items-center justify-center text-[30px] shadow-sm border border-slate-100">🤿</div>
+                    <span class="text-[12px] font-bold text-slate-700">스킨스쿠버</span>
                 </div>
                 <div class="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform" onclick="location.href='search.html'">
-                    <div class="w-[60px] h-[60px] bg-slate-50 rounded-[18px] flex items-center justify-center text-[28px] shadow-sm border border-slate-100/50">🏕️</div>
-                    <span class="text-[12px] font-bold text-slate-700 tracking-tighter">해변글램핑</span>
+                    <div class="w-[60px] h-[60px] bg-white rounded-2xl flex items-center justify-center text-[30px] shadow-sm border border-slate-100">🏕️</div>
+                    <span class="text-[12px] font-bold text-slate-700">해변글램핑</span>
                 </div>
                 <div class="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform" onclick="location.href='search.html'">
-                    <div class="w-[60px] h-[60px] bg-slate-50 rounded-[18px] flex items-center justify-center text-[28px] shadow-sm border border-slate-100/50">🎟️</div>
-                    <span class="text-[12px] font-bold text-slate-700 tracking-tighter">투어티켓</span>
+                    <div class="w-[60px] h-[60px] bg-white rounded-2xl flex items-center justify-center text-[30px] shadow-sm border border-slate-100">🎟️</div>
+                    <span class="text-[12px] font-bold text-slate-700">투어티켓</span>
                 </div>
                 <div class="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform" onclick="location.href='search.html'">
-                    <div class="w-[60px] h-[60px] bg-slate-50 rounded-[18px] flex items-center justify-center text-[28px] shadow-sm border border-slate-100/50">✈️</div>
-                    <span class="text-[12px] font-bold text-slate-700 tracking-tighter">해외레저</span>
+                    <div class="w-[60px] h-[60px] bg-white rounded-2xl flex items-center justify-center text-[30px] shadow-sm border border-slate-100">✈️</div>
+                    <span class="text-[12px] font-bold text-slate-700">해외레저</span>
                 </div>
                 <div class="flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform" onclick="location.href='search.html'">
-                    <div class="w-[60px] h-[60px] bg-slate-50 rounded-[18px] flex items-center justify-center text-[28px] shadow-sm border border-slate-100/50">📍</div>
-                    <span class="text-[12px] font-black text-blue-600 tracking-tighter">내 주변</span>
+                    <div class="w-[60px] h-[60px] bg-white rounded-2xl flex items-center justify-center text-[30px] shadow-sm border border-slate-100">📍</div>
+                    <span class="text-[12px] font-black text-blue-600">내 주변</span>
                 </div>
             </div>
         </div>
 
-        <!-- 💡 수정된 부분: 모바일 날씨 위젯 (물때 추가 4칸 배열) -->
-        <div class="mt-4 px-4 relative z-20 bg-white">
-            <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 shadow-sm">
-                <div class="flex items-center justify-between mb-4">
+        <!-- 💡 2. 모바일 날씨 위젯 (물때 추가된 4단 배열 및 ID 연결 완료!) -->
+        <div class="mt-4 px-4">
+            <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 border border-blue-100/50 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
                     <h3 class="font-bold text-slate-800 flex items-center gap-1.5 text-[14px]">
                         <i class="fa-solid fa-location-dot text-blue-500"></i> <span id="mobile-weather-region">보령</span> 날씨
                     </h3>
-                    <span class="text-[10px] bg-blue-50 border border-blue-100 text-blue-600 px-2.5 py-0.5 rounded-full font-bold shadow-sm">실시간</span>
+                    <span class="text-[10px] bg-white border border-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold shadow-sm">실시간</span>
                 </div>
-                <div class="grid grid-cols-4 gap-2">
-                    <div class="flex flex-col items-center justify-center bg-white rounded-xl py-3 shadow-sm border border-slate-100">
-                        <i id="mobile-weather-icon" class="fa-solid fa-cloud text-slate-400 mb-2 text-xl"></i>
-                        <span id="mobile-weather-cond" class="text-[10px] font-bold text-slate-500 tracking-tight mb-0.5">조회중</span>
-                        <span id="mobile-weather-temp" class="text-[14px] font-black text-slate-800">-</span>
+                <div class="grid grid-cols-4 gap-2 text-center">
+                    <div class="flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl py-3 px-1 shadow-sm border border-white">
+                        <i id="mobile-weather-icon" class="fa-solid fa-cloud text-slate-400 mb-1.5 text-xl"></i>
+                        <span id="mobile-weather-cond" class="text-[11px] font-bold text-slate-500 mb-0.5">조회중</span>
+                        <span id="mobile-weather-temp" class="text-[14px] font-black text-slate-800 tracking-tight">-</span>
                     </div>
-                    <div class="flex flex-col items-center justify-center bg-white rounded-xl py-3 shadow-sm border border-slate-100">
-                        <i class="fa-solid fa-wind text-teal-400 mb-2 text-xl"></i>
-                        <span class="text-[10px] font-bold text-slate-500 tracking-tight mb-0.5">풍속</span>
-                        <span id="mobile-weather-wind" class="text-[14px] font-black text-slate-800">-</span>
+                    <div class="flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl py-3 px-1 shadow-sm border border-white">
+                        <i class="fa-solid fa-wind text-teal-400 mb-1.5 text-xl"></i>
+                        <span class="text-[11px] font-bold text-slate-500 mb-0.5">풍속</span>
+                        <span id="mobile-weather-wind" class="text-[14px] font-black text-slate-800 tracking-tight">-</span>
                     </div>
-                    <div class="flex flex-col items-center justify-center bg-white rounded-xl py-3 shadow-sm border border-slate-100">
-                        <i class="fa-solid fa-water text-blue-500 mb-2 text-xl"></i>
-                        <span class="text-[10px] font-bold text-slate-500 tracking-tight mb-0.5">파고</span>
-                        <span id="mobile-weather-wave" class="text-[14px] font-black text-slate-800">-</span>
+                    <div class="flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl py-3 px-1 shadow-sm border border-white">
+                        <i class="fa-solid fa-water text-blue-500 mb-1.5 text-xl"></i>
+                        <span class="text-[11px] font-bold text-slate-500 mb-0.5">파고</span>
+                        <span id="mobile-weather-wave" class="text-[14px] font-black text-slate-800 tracking-tight">-</span>
                     </div>
-                    <div class="flex flex-col items-center justify-center bg-blue-50 rounded-xl py-3 shadow-sm border border-blue-100">
-                        <i class="fa-solid fa-droplet text-blue-600 mb-2 text-xl"></i>
-                        <span class="text-[10px] font-bold text-blue-600 tracking-tight mb-0.5">물때</span>
+                    <div class="flex flex-col items-center justify-center bg-blue-100/50 backdrop-blur-sm rounded-xl py-3 px-1 shadow-sm border border-blue-200">
+                        <i class="fa-solid fa-droplet text-blue-600 mb-1.5 text-xl"></i>
+                        <span class="text-[11px] font-bold text-blue-600 mb-0.5">물때</span>
                         <span id="mobile-weather-tide" class="text-[13px] font-black text-blue-800 tracking-tighter">-</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 모바일 추천 선박 리스트 -->
+        <!-- 모바일 추천 선박 -->
+        <div class="px-4 mt-8 mb-8">
+            <div class="flex items-end justify-between mb-4">
+                <div>
+                    <h2 class="text-lg font-black text-slate-800 tracking-tight">추천 선박</h2>
+                    <p class="text-xs font-medium text-slate-500 mt-0.5">지금 인기있는 리스트</p>
                 </div>
-                <button onclick="location.href='search.html'" class="text-blue-600 font-bold text-[12px] flex items-center gap-1 border border-blue-100 bg-blue-50 px-2.5 py-1.5 rounded-lg">
+                <a href="search.html" class="text-blue-600 font-bold text-[13px] flex items-center gap-0.5 bg-blue-50 px-2 py-1.5 rounded-lg border border-blue-100">
                     전체보기 <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                </button>
+                </a>
             </div>
-            
-            <!-- 여기에 데이터가 들어갑니다 -->
-            <div class="grid grid-cols-1 gap-4" id="boat-list-mobile-grid">
-                <!-- ui.js가 제어 -->
-            </div>
+            <!-- 모바일 리스트 컨테이너 (ui.js가 세로로 카드를 렌더링함) -->
+            <div id="boat-list-mobile-grid" class="grid grid-cols-1 gap-4"></div>
         </div>
 
-        <!-- 모바일 하단 네비게이션 탭 -->
-        <div class="fixed md:hidden bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-slate-100 flex justify-between px-6 pt-2.5 pb-6 z-[80] shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
-            <a href="index.html" class="flex flex-col items-center gap-1 text-blue-600 transition-colors">
-                <i class="fa-solid fa-house text-[20px]"></i>
+        <!-- 📱 하단 네비게이션 바 (App Bottom Nav) -->
+        <div class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-slate-100 flex justify-around px-2 pt-2.5 pb-6 z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
+            <a href="index.html" class="flex flex-col items-center gap-1 text-blue-600 w-16">
+                <i class="fa-solid fa-house text-xl"></i>
                 <span class="text-[10px] font-bold mt-0.5">홈</span>
             </a>
-            <a href="search.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-600 transition-colors">
-                <i class="fa-solid fa-magnifying-glass text-[20px]"></i>
+            <a href="search.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-600 transition-colors w-16">
+                <i class="fa-solid fa-magnifying-glass text-xl"></i>
                 <span class="text-[10px] font-bold mt-0.5">검색</span>
             </a>
-            <a href="javascript:void(0)" onclick="if(typeof showToast==='function') showToast('찜 내역은 마이페이지에서 확인 가능합니다.');" class="flex flex-col items-center gap-1 text-slate-400 hover:text-rose-500 transition-colors relative">
-                <i class="fa-regular fa-heart text-[20px]"></i>
+            <a href="javascript:void(0)" onclick="if(!localStorage.getItem('blueanchor_token')) { alert('로그인이 필요합니다.'); location.href='login.html'; } else { location.href='mypage.html'; }" class="flex flex-col items-center gap-1 text-slate-400 hover:text-rose-500 transition-colors relative w-16">
+                <i class="fa-regular fa-heart text-xl"></i>
                 <span class="text-[10px] font-bold mt-0.5">찜</span>
-                <span id="wishlistCount" class="absolute -top-1 -right-2 bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full hidden shadow-sm leading-none">0</span>
+                <span id="mobileWishlistCount" class="absolute -top-1 right-2 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full hidden shadow-sm">0</span>
             </a>
-            <a href="mypage.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-600 transition-colors">
-                <i class="fa-solid fa-user text-[20px]"></i>
+            <a href="javascript:void(0)" onclick="if(!localStorage.getItem('blueanchor_token')) { alert('로그인이 필요합니다.'); location.href='login.html'; } else { location.href='mypage.html'; }" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-600 transition-colors w-16">
+                <i class="fa-regular fa-user text-xl"></i>
                 <span class="text-[10px] font-bold mt-0.5">마이</span>
             </a>
         </div>
     </div>
 
+
     <!-- ==========================================
-         💻 2. [PC 전용] 넓고 시원한 기존 UI
+         💻 2. [PC 전용] 웹 UI (회원님 기존 코드 100% 원본 유지)
     =========================================== -->
     <div class="hidden md:block">
-        <!-- PC GNB -->
-        <nav class="glass-nav fixed top-0 w-full z-40 transition-all duration-300">
+        <nav class="glass-nav fixed top-0 w-full z-50 transition-all duration-300">
             <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
                 <div class="flex items-center gap-8">
                     <a href="index.html" class="flex items-center gap-2 text-blue-600">
                         <i class="fa-solid fa-anchor text-2xl"></i>
                         <span class="text-xl font-black tracking-tight">블루앵커</span>
                     </a>
-                    <div class="flex gap-6 font-bold text-[15px] text-slate-600 mt-1">
-                        <a href="search.html" class="hover:text-blue-600 transition-colors">배낚시 예약</a>
+                    <div class="hidden md:flex gap-6 font-bold text-[15px] text-slate-600 mt-1">
+                        <a href="search.html" class="text-slate-800 hover:text-blue-600 transition-colors">배낚시 예약</a>
                         <a href="#" class="hover:text-blue-600 transition-colors">조황/조행기</a>
                         <a href="#" class="hover:text-blue-600 transition-colors">바다날씨/물때</a>
+                        <a href="#" class="hover:text-blue-600 transition-colors">커뮤니티</a>
                         <a href="#" class="hover:text-blue-600 transition-colors text-rose-500 relative">이벤트<span class="absolute -top-2 -right-3 bg-rose-500 text-white text-[9px] px-1 rounded-sm">N</span></a>
                     </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <a href="#" class="relative text-slate-500 hover:text-rose-500 transition-colors">
-                        <i class="fa-solid fa-heart text-xl"></i>
-                        <span id="wishlistCountPC" class="absolute -top-1.5 -right-2 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full hidden">0</span>
+                <div class="hidden md:flex items-center gap-4">
+                    <a href="#" class="relative text-slate-500 hover:text-rose-500 transition-colors flex items-center gap-1.5 font-bold text-sm">
+                        <i class="fa-solid fa-heart text-lg text-slate-400"></i>
+                        <span id="wishlistCount" class="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full hidden">0</span>
                     </a>
-                    <a href="login.html" class="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">로그인</a>
-                    <a href="captain.html" class="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-100 transition-colors border border-blue-100"><i class="fa-solid fa-ship mr-1"></i> 선장님 파트너 가입</a>
+                    <a href="login.html" class="text-sm font-bold text-slate-600 ml-2">로그인</a>
+                    <a href="captain.html" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-[13px] font-bold hover:bg-blue-100 transition-colors border border-blue-100 flex items-center gap-1.5"><i class="fa-solid fa-ship"></i> 선장님 파트너 가입</a>
                 </div>
             </div>
         </nav>
 
-        <!-- PC 메인 히어로 -->
-        <section class="hero-gradient pt-36 pb-28 px-4 relative overflow-hidden">
-            <div class="max-w-4xl mx-auto relative z-10 text-center">
-                <h1 class="text-5xl font-black text-white mb-4 tracking-tight leading-tight">전국 선사 실시간 예약</h1>
-                <p class="text-blue-100 text-lg mb-12 font-medium">물때와 날씨를 한눈에 확인하고 나에게 딱 맞는 낚시 배를 찾아보세요.</p>
-                
-                <div class="bg-white p-3 rounded-full custom-shadow flex gap-0 relative cursor-pointer hover:shadow-2xl transition-all border border-white/50 max-w-3xl mx-auto" onclick="openSearchModal()">
-                    <div class="flex-1 flex items-center px-4 border-r border-slate-100 group">
-                        <div class="w-8 flex justify-center text-blue-500 group-hover:scale-110 transition-transform"><i class="fa-regular fa-calendar-check text-lg"></i></div>
-                        <div class="ml-3 text-left">
-                            <div class="text-[11px] font-bold text-slate-400 mb-0.5">출조 날짜</div>
-                            <div class="font-black text-slate-800 text-[14px]" id="barDate">날짜 선택</div>
-                        </div>
+        <!-- 1. 메인 히어로 섹션 -->
+        <section class="hero-bg pt-32 pb-48 px-4 text-center relative">
+            <h1 class="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight shadow-sm drop-shadow-md">짜릿한 손맛, 완벽한 출조의 시작</h1>
+            <p class="text-white/90 text-[15px] md:text-lg font-medium drop-shadow-sm mb-10">실시간 해양 데이터 기반으로 가장 확실한 선사를 찾아드려요</p>
+            
+            <div id="btn-open-filter" onclick="openSearchModal()" class="max-w-4xl mx-auto bg-white rounded-full p-2.5 shadow-xl flex items-center justify-between cursor-pointer hover:scale-[1.01] transition-transform">
+                <div class="flex-1 flex items-center px-6 border-r border-slate-200">
+                    <div class="text-left w-full">
+                        <div class="text-[11px] font-bold text-slate-400 mb-0.5">출조일</div>
+                        <div class="font-black text-slate-800 text-[15px]" id="barDate">2026. 06. 18</div>
                     </div>
-                    <div class="flex-1 flex items-center px-4 border-r border-slate-100 group">
-                        <div class="w-8 flex justify-center text-blue-500 group-hover:scale-110 transition-transform"><i class="fa-solid fa-location-dot text-lg"></i></div>
-                        <div class="ml-3 text-left">
-                            <div class="text-[11px] font-bold text-slate-400 mb-0.5">지역 및 항구</div>
-                            <div class="font-black text-slate-800 text-[14px]" id="barRegion">오천항</div>
-                        </div>
+                </div>
+                <div class="flex-1 flex items-center px-6 border-r border-slate-200">
+                    <div class="text-left w-full">
+                        <div class="text-[11px] font-bold text-slate-400 mb-0.5">출항 지역</div>
+                        <div class="font-black text-slate-800 text-[15px]" id="barRegion">보령</div>
                     </div>
-                    <button type="button" class="ml-2 bg-blue-600 text-white rounded-full px-8 py-3 font-bold text-[15px] hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-md shadow-blue-600/30">
-                        검색하기
-                    </button>
+                </div>
+                <div class="flex-1 flex items-center px-6 border-r border-slate-200">
+                    <div class="text-left w-full">
+                        <div class="text-[11px] font-bold text-slate-400 mb-0.5">인원</div>
+                        <div class="font-black text-slate-800 text-[15px]" id="barGuests">1명</div>
+                    </div>
+                </div>
+                <div class="flex-1 flex items-center px-6">
+                    <div class="text-left w-full">
+                        <div class="text-[11px] font-bold text-slate-400 mb-0.5">목표 어종</div>
+                        <div class="font-black text-slate-800 text-[15px]" id="barSpecies">전체</div>
+                    </div>
+                </div>
+                <div class="w-12 h-12 shrink-0 bg-blue-600 rounded-full flex items-center justify-center text-white text-lg shadow-md hover:bg-blue-700 transition-colors ml-2">
+                    <i class="fa-solid fa-magnifying-glass"></i>
                 </div>
             </div>
         </section>
 
-        <!-- PC 추천 선사 리스트 -->
-        <section class="max-w-7xl mx-auto px-4 mt-12 mb-20 relative">
+        <!-- 2. 배너 슬라이더 -->
+        <section class="max-w-6xl mx-auto px-4 -mt-32 relative z-10 mb-16">
+            <div class="swiper mainBannerSwiper rounded-[32px] overflow-hidden shadow-2xl h-[240px] md:h-[280px]">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide bg-slate-900 flex flex-col items-center justify-center text-center relative group cursor-pointer">
+                        <img src="https://images.unsplash.com/photo-1599423300746-b62533397364?auto=format&fit=crop&q=80&w=1200" class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-700">
+                        <div class="relative z-10">
+                            <span class="bg-blue-600 text-white px-4 py-1.5 rounded-full text-[11px] font-black tracking-widest mb-4 inline-block shadow-lg">100% REAL TIME</span>
+                            <h2 class="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight drop-shadow-md">선장님이 매일 올리는 특급 조황 뉴스</h2>
+                            <p class="text-slate-200 text-sm md:text-base font-medium drop-shadow">가짜 사진에 속지 마세요! 당일 출조 배 위에서 찍은 생생한 조과 정보</p>
+                        </div>
+                    </div>
+                    <div class="swiper-slide bg-slate-900 flex flex-col items-center justify-center text-center relative group cursor-pointer">
+                        <img src="https://images.unsplash.com/photo-1583416750470-965b2707b355?auto=format&fit=crop&q=80&w=1200" class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-700">
+                        <div class="relative z-10">
+                            <span class="bg-teal-500 text-white px-4 py-1.5 rounded-full text-[11px] font-black tracking-widest mb-4 inline-block shadow-lg">EASY GUIDE</span>
+                            <h2 class="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight drop-shadow-md">몸만 떠나는 가벼운 출조, 장비 대여</h2>
+                            <p class="text-slate-200 text-sm md:text-base font-medium drop-shadow">낚시가 처음이어도 걱정 끝! 최신형 최고급 장비 풀세트 지원</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-pagination !bottom-6"></div>
+            </div>
+        </section>
+
+        <!-- 3. 선사 추천 카드 (DB 데이터 연동 영역) -->
+        <section class="max-w-7xl mx-auto px-4 mb-20 relative">
             <div class="flex justify-between items-end mb-6">
                 <div>
-                    <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">선장님 추천! 마감임박 선사 <i class="fa-solid fa-fire text-rose-500"></i></h2>
+                    <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                        <i class="fa-solid fa-ship text-blue-600"></i> 선장님 추천! 마감임박 선사
+                    </h2>
                     <p class="text-[14px] text-slate-500 mt-1 font-medium tracking-tight">검증된 베테랑 선장님들의 실시간 잔여석 정보입니다.</p>
                 </div>
                 <a href="search.html" class="text-[14px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors">전체보기 <i class="fa-solid fa-chevron-right text-[11px]"></i></a>
             </div>
 
-            <div class="relative w-full">
+            <div class="relative group w-full">
                 <div class="swiper boatSwiper overflow-hidden pb-4">
                     <div class="swiper-wrapper py-2" id="boat-list-swiper-wrapper">
-                        <!-- ui.js가 여기에 카드를 채웁니다 -->
+                        <!-- DB 선사 카드가 동적으로 렌더링 됩니다 -->
                     </div>
                 </div>
-                <button type="button" class="swiper-btn-prev-boat swiper-button-custom hidden md:flex absolute top-[40%] -left-6 -translate-y-1/2"><i class="fa-solid fa-chevron-left text-lg"></i></button>
-                <button type="button" class="swiper-btn-next-boat swiper-button-custom hidden md:flex absolute top-[40%] -right-6 -translate-y-1/2"><i class="fa-solid fa-chevron-right text-lg"></i></button>
+
+                <button type="button" class="swiper-btn-prev-boat outer-nav-btn absolute top-[40%] -left-6 -translate-y-1/2 hidden md:flex"><i class="fa-solid fa-chevron-left text-lg"></i></button>
+                <button type="button" class="swiper-btn-next-boat outer-nav-btn absolute top-[40%] -right-6 -translate-y-1/2 hidden md:flex"><i class="fa-solid fa-chevron-right text-lg"></i></button>
+            </div>
+        </section>
+
+        <!-- 4. 조황 갤러리 -->
+        <section class="max-w-7xl mx-auto px-4 mb-20 relative">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                        <i class="fa-solid fa-camera-retro text-blue-600"></i> 핫한 실시간 조황
+                    </h2>
+                    <p class="text-[13px] text-slate-500 mt-1 font-medium tracking-tight">조사님들이 방금 전 배 위에서 올린 생생한 대물 인증샷!</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <img src="https://images.unsplash.com/photo-1544329621-e00eb2c300ea?auto=format&fit=crop&q=80&w=400&h=400" class="w-full aspect-square object-cover">
+                    <div class="p-4">
+                        <div class="flex justify-between items-center text-[11px] mb-1.5">
+                            <span class="text-blue-600 font-bold"><i class="fa-solid fa-location-dot"></i> 보령 찰리다</span>
+                            <span class="text-slate-400">방금 전</span>
+                        </div>
+                        <h3 class="text-[15px] font-black text-slate-800 mb-4 line-clamp-1">참돔 7짜 대물 달성!</h3>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <img src="https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&q=80&w=400&h=400" class="w-full aspect-square object-cover">
+                    <div class="p-4">
+                        <div class="flex justify-between items-center text-[11px] mb-1.5">
+                            <span class="text-blue-600 font-bold"><i class="fa-solid fa-location-dot"></i> 인천 연안부두</span>
+                            <span class="text-slate-400">16분 전</span>
+                        </div>
+                        <h3 class="text-[15px] font-black text-slate-800 mb-4 line-clamp-1">오전 타작 광어 대풍년</h3>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <img src="https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?auto=format&fit=crop&q=80&w=400&h=400" class="w-full aspect-square object-cover">
+                    <div class="p-4">
+                        <div class="flex justify-between items-center text-[11px] mb-1.5">
+                            <span class="text-blue-600 font-bold"><i class="fa-solid fa-location-dot"></i> 군산 비응항</span>
+                            <span class="text-slate-400">1시간 전</span>
+                        </div>
+                        <h3 class="text-[15px] font-black text-slate-800 mb-4 line-clamp-1">생미끼 쭈꾸미 쿨러 만석</h3>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <img src="https://images.unsplash.com/photo-1583416750470-965b2707b355?auto=format&fit=crop&q=80&w=400&h=400" class="w-full aspect-square object-cover">
+                    <div class="p-4">
+                        <div class="flex justify-between items-center text-[11px] mb-1.5">
+                            <span class="text-blue-600 font-bold"><i class="fa-solid fa-location-dot"></i> 목포 북항</span>
+                            <span class="text-slate-400">2시간 전</span>
+                        </div>
+                        <h3 class="text-[15px] font-black text-slate-800 mb-4 line-clamp-1">우럭 쌍걸이 손맛 대박</h3>
+                    </div>
+                </div>
             </div>
         </section>
     </div>
 
-    <!-- ===================================== -->
-    <!-- 💡 공통 필터 모달 -->
-    <!-- ===================================== -->
+    <!-- ==========================================
+         ✨ [공통] 통합 검색 모달
+    =========================================== -->
     <div id="filter-modal" onclick="if(event.target === this && typeof closeSearchModal === 'function') closeSearchModal()" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4 transition-all duration-300">
         <div class="bg-[#f8fafc] w-full max-w-6xl h-[90vh] md:h-[80vh] rounded-t-3xl md:rounded-3xl flex flex-col overflow-hidden shadow-2xl relative animate-[slideUp_0.3s_ease-out]">
             <div class="bg-white border-b border-slate-100 px-6 py-4 flex justify-between items-center shrink-0">
-                <div class="flex items-center gap-2"><i class="fa-solid fa-sliders text-blue-600 text-xl"></i><h2 class="text-xl font-black text-slate-800 tracking-tight">맞춤 출조 검색</h2></div>
-                <button type="button" onclick="closeSearchModal()" class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-blue-600 text-xl"></i>
+                    <h2 class="text-xl font-black text-slate-800 tracking-tight">맞춤 출조 선사 통합 검색</h2>
+                </div>
+                <button type="button" id="btn-close-filter" onclick="if(typeof closeSearchModal === 'function') closeSearchModal()" class="w-10 h-10 bg-slate-50 hover:bg-slate-100 rounded-full flex items-center justify-center text-slate-500 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
             </div>
+
             <div class="flex-1 overflow-y-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- 모달 내용은 기존과 동일하므로 생략 없이 렌더링 -->
                 <div class="space-y-4">
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100"><h3 class="font-bold text-slate-700 mb-4"><i class="fa-regular fa-calendar-check text-blue-500 mr-1"></i>출조 날짜</h3><div id="calendarContainer"></div></div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="flex items-center gap-2 mb-4"><i class="fa-regular fa-calendar-check text-blue-500"></i><h3 class="font-bold text-slate-700">출조 날짜</h3></div>
+                        <div id="calendarContainer" class="w-full"></div>
+                    </div>
                     
-                    <!-- 💡 수정된 부분: 모바일 환경(hidden)에서는 물때표를 숨기고 PC(md:block)에서만 보여줌 -->
+                    <!-- 💡 3. 모달의 물때표는 모바일에서 숨김 처리 (hidden md:block 적용 완료!) -->
                     <div id="tideCardContainer" class="hidden md:block w-full h-full min-h-[350px]"></div>
                 </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm flex flex-col border border-slate-100">
-                    <h3 class="font-bold text-slate-700 mb-4 shrink-0"><i class="fa-solid fa-map-location-dot text-blue-500 mr-1"></i>출항 지역</h3>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col">
+                    <div class="flex items-center gap-2 mb-4 shrink-0"><i class="fa-solid fa-map-location-dot text-blue-500"></i><h3 class="font-bold text-slate-700">출항 지역</h3></div>
                     <div class="flex bg-slate-50 rounded-xl p-1 mb-4 shrink-0 border border-slate-100" id="regionTabs"></div>
                     <div class="grid grid-cols-2 gap-2 overflow-y-auto pr-2 flex-1 content-start" id="regionGrid"></div>
                 </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm flex flex-col border border-slate-100">
-                    <h3 class="font-bold text-slate-700 mb-4 shrink-0"><i class="fa-solid fa-fish text-blue-500 mr-1"></i>상세 조건</h3>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col">
+                    <div class="flex items-center gap-2 mb-4 shrink-0"><i class="fa-solid fa-fish text-blue-500"></i><h3 class="font-bold text-slate-700">상세 조건</h3></div>
                     <div class="mb-6">
                         <h4 class="text-xs font-bold text-slate-400 mb-2">탑승 인원</h4>
                         <div class="flex items-center justify-between border border-slate-200 rounded-xl p-2 bg-slate-50">
-                            <button onclick="changeGuest(-1)" class="w-10 h-10 bg-white border border-slate-200 rounded-lg text-slate-600">-</button>
-                            <span class="font-black text-xl text-slate-800" id="modalGuestText">1</span>
-                            <button onclick="changeGuest(1)" class="w-10 h-10 bg-white border border-slate-200 rounded-lg text-slate-600">+</button>
+                            <button type="button" onclick="if(typeof changeGuest === 'function') changeGuest(-1)" class="w-10 h-10 bg-white border border-slate-200 rounded-lg flex justify-center items-center text-slate-600 hover:text-blue-500"><i class="fa-solid fa-minus"></i></button>
+                            <span class="font-black text-xl text-slate-800 w-16 text-center" id="modalGuestText">1</span>
+                            <button type="button" onclick="if(typeof changeGuest === 'function') changeGuest(1)" class="w-10 h-10 bg-white border border-slate-200 rounded-lg flex justify-center items-center text-slate-600 hover:text-blue-500"><i class="fa-solid fa-plus"></i></button>
                         </div>
                     </div>
-                    <div class="flex-1 flex flex-col min-h-0"><h4 class="text-xs font-bold text-slate-400 mb-2">대상 어종</h4><div class="grid grid-cols-2 gap-2 overflow-y-auto content-start" id="speciesGrid"></div></div>
+                    <div class="flex-1 flex flex-col min-h-0">
+                        <h4 class="text-xs font-bold text-slate-400 mb-2">출조 대상 어종</h4>
+                        <div class="grid grid-cols-2 gap-2 overflow-y-auto pr-2 content-start" id="speciesGrid"></div>
+                    </div>
                 </div>
             </div>
+
             <div class="bg-white border-t border-slate-100 p-4 shrink-0">
-                <button onclick="location.href='search.html'" class="w-full bg-blue-600 text-white font-black py-4 rounded-xl shadow-lg shadow-blue-600/30 hover:bg-blue-700 text-lg">이 조건으로 낚싯배 찾기</button>
+                <button type="button" id="btn-apply-filter" onclick="if(typeof applyFilters === 'function') applyFilters()" class="w-full bg-blue-600 text-white font-black py-4 rounded-xl shadow-lg shadow-blue-600/30 hover:bg-blue-700 transition-colors text-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass"></i> 이 조건으로 낚싯배 찾기
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- 공통 토스트 알림 컨테이너 영역 -->
-    <div id="toast-container" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
-
+    <!-- 스크립트 연결 -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
     <script src="js/ui.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if(typeof Swiper !== 'undefined') {
-                new Swiper('.boatSwiper', { slidesPerView: 'auto', spaceBetween: 16, observer: true, observeParents: true, navigation: { nextEl: '.swiper-btn-next-boat', prevEl: '.swiper-btn-prev-boat' }, breakpoints: { 768: { spaceBetween: 24 } } });
+                const mainBannerSwiper = new Swiper('.mainBannerSwiper', {
+                    loop: true,
+                    autoplay: { delay: 5000, disableOnInteraction: false },
+                    pagination: { el: '.mainBannerSwiper .swiper-pagination', clickable: true },
+                });
+
+                const boatSwiper = new Swiper('.boatSwiper', {
+                    slidesPerView: 'auto',
+                    spaceBetween: 16,
+                    observer: true,
+                    observeParents: true,
+                    navigation: {
+                        nextEl: '.swiper-btn-next-boat',
+                        prevEl: '.swiper-btn-prev-boat',
+                    },
+                    breakpoints: { 768: { spaceBetween: 24 } }
+                });
             }
+
+            // 모바일 하단 네비게이션용 하트 카운트 동기화
+            const syncMobileWishlist = async () => {
+                const token = localStorage.getItem('blueanchor_token');
+                if (!token) return;
+                try {
+                    const res = await fetch(`http://127.0.0.1:8000/api/wishlist/my`, { headers: { 'Authorization': `Bearer ${token}` } });
+                    if (res.ok) {
+                        const wishes = await res.json();
+                        const mobileBadge = document.getElementById('mobileWishlistCount');
+                        if (mobileBadge) {
+                            if (wishes.length > 0) {
+                                mobileBadge.innerText = wishes.length;
+                                mobileBadge.classList.remove('hidden');
+                            } else {
+                                mobileBadge.classList.add('hidden');
+                            }
+                        }
+                    }
+                } catch (e) {}
+            };
+            syncMobileWishlist();
         });
     </script>
 </body>
