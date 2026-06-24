@@ -116,18 +116,48 @@
             </div>
         </div>
 
-        <!-- 💡 2. 모바일 날씨 위젯 (물때 추가된 4단 배열 및 ID 연결 완료!) -->
+        <!-- 💡 완벽 복구된 부분: 모바일 4단 날씨 위젯 + 지역 변경 셀렉트박스 + 윈디 ID -->
         <div class="mt-4 px-4">
-            <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 border border-blue-100/50 shadow-sm">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="font-bold text-slate-800 flex items-center gap-1.5 text-[14px]">
-                        <i class="fa-solid fa-location-dot text-blue-500"></i> <span id="mobile-weather-region">보령</span> 날씨
-                    </h3>
-                    <span class="text-[10px] bg-white border border-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold shadow-sm">실시간</span>
+            <div onclick="window.open('https://www.windy.com/?36.402,126.483,10', '_blank')" id="mobile-weather-windy-link" class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 border border-blue-100/50 shadow-sm cursor-pointer active:scale-[0.98] transition-all relative">
+                <!-- 우측 상단 윈디 이동 안내 아이콘 -->
+                <div class="absolute top-4 right-4 text-blue-400 opacity-60 text-xs">
+                    윈디 확인 <i class="fa-solid fa-arrow-up-right-from-square ml-0.5"></i>
                 </div>
-                <div class="grid grid-cols-4 gap-2 text-center">
+                
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-1.5 text-[14px] relative" onclick="event.stopPropagation()">
+                        <i class="fa-solid fa-location-dot text-blue-500"></i> 
+                        <span id="mobile-weather-region-text" class="border-b border-dashed border-blue-400 text-blue-700 pb-0.5">보령</span> 날씨
+                        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-0.5"></i>
+                        
+                        <!-- 투명하게 덮어씌워진 셀렉트 박스 (지역 변경 기능) -->
+                        <select onchange="changeMobileWeatherRegion(this.value)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            <optgroup label="서해">
+                                <option value="DT_0001|인천">인천</option>
+                                <option value="DT_0025|보령" selected>보령</option>
+                                <option value="DT_0018|군산">군산</option>
+                                <option value="DT_0007|목포">목포</option>
+                            </optgroup>
+                            <optgroup label="남해">
+                                <option value="DT_0016|여수">여수</option>
+                                <option value="DT_0014|통영">통영</option>
+                                <option value="DT_0005|부산">부산</option>
+                            </optgroup>
+                            <optgroup label="동해">
+                                <option value="DT_0020|울산">울산</option>
+                                <option value="DT_0009|포항">포항</option>
+                                <option value="DT_0012|속초">속초</option>
+                            </optgroup>
+                            <optgroup label="제주">
+                                <option value="DT_0004|제주">제주</option>
+                                <option value="DT_0010|서귀포">서귀포</option>
+                            </optgroup>
+                        </select>
+                    </h3>
+                </div>
+                <div class="grid grid-cols-4 gap-2 text-center mt-1">
                     <div class="flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl py-3 px-1 shadow-sm border border-white">
-                        <i id="mobile-weather-icon" class="fa-solid fa-cloud text-slate-400 mb-1.5 text-xl"></i>
+                        <i id="mobile-weather-icon" class="fa-solid fa-spinner fa-spin text-slate-400 mb-1.5 text-xl"></i>
                         <span id="mobile-weather-cond" class="text-[11px] font-bold text-slate-500 mb-0.5">조회중</span>
                         <span id="mobile-weather-temp" class="text-[14px] font-black text-slate-800 tracking-tight">-</span>
                     </div>
@@ -359,7 +389,7 @@
     </div>
 
     <!-- ==========================================
-         ✨ [공통] 통합 검색 모달
+         ✨ [공통] 통합 검색 모달 (💡 모바일에서 물때표 숨김 처리 유지)
     =========================================== -->
     <div id="filter-modal" onclick="if(event.target === this && typeof closeSearchModal === 'function') closeSearchModal()" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4 transition-all duration-300">
         <div class="bg-[#f8fafc] w-full max-w-6xl h-[90vh] md:h-[80vh] rounded-t-3xl md:rounded-3xl flex flex-col overflow-hidden shadow-2xl relative animate-[slideUp_0.3s_ease-out]">
@@ -380,7 +410,7 @@
                         <div id="calendarContainer" class="w-full"></div>
                     </div>
                     
-                    <!-- 💡 3. 모달의 물때표는 모바일에서 숨김 처리 (hidden md:block 적용 완료!) -->
+                    <!-- 💡 모달의 물때표는 모바일에서 숨김 처리 -->
                     <div id="tideCardContainer" class="hidden md:block w-full h-full min-h-[350px]"></div>
                 </div>
 

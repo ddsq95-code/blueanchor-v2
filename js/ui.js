@@ -13,7 +13,7 @@ let currentSelectedDate = new Date(realTimeNow.getFullYear(), realTimeNow.getMon
 // ✨ 1. 앱 전용 고급 UI 요소 (토스트 알림, 스켈레톤, 빈 화면)
 // ==========================================
 
-// 💡 브라우저 기본 alert 대신 예쁜 토스트 알림 표시
+// 💡 토스트 알림 표시
 window.showToast = function(message, isError = false) {
     let toastContainer = document.getElementById('toast-container');
     if (!toastContainer) {
@@ -24,8 +24,8 @@ window.showToast = function(message, isError = false) {
     }
     
     const toast = document.createElement('div');
-    const icon = isError ? '<i class="fa-solid fa-circle-exclamation text-rose-400"></i>' : '<i class="fa-solid fa-circle-info text-blue-400"></i>';
-    toast.className = 'bg-gray-800 text-white text-[13px] font-bold px-5 py-3 rounded-full shadow-lg transition-all duration-300 transform translate-y-10 opacity-0 flex items-center gap-2 whitespace-nowrap';
+    const icon = isError ? '<i class="fa-solid fa-circle-exclamation text-rose-400"></i>' : '<i class="fa-solid fa-circle-check text-blue-400"></i>';
+    toast.className = 'bg-slate-800 text-white text-[13px] font-bold px-5 py-3.5 rounded-full shadow-lg transition-all duration-300 transform translate-y-10 opacity-0 flex items-center gap-2 whitespace-nowrap';
     toast.innerHTML = `${icon} ${message}`;
     toastContainer.appendChild(toast);
 
@@ -41,7 +41,7 @@ window.showToast = function(message, isError = false) {
     }, 2500);
 };
 
-// 💡 DB 데이터 생성(초기화) 버튼 함수 추가 (복구됨!)
+// 💡 DB 데이터 생성(초기화) 버튼 함수 추가
 window.initDatabase = async function() {
     showToast("데이터를 생성하는 중입니다...");
     try {
@@ -73,7 +73,7 @@ function getSkeletonHtml(isIndexPage) {
     `;
 }
 
-// 💡 데이터가 없을 때 표시할 빈 화면 HTML (초기화 버튼 포함 복구됨!)
+// 💡 데이터가 없을 때 표시할 빈 화면 및 버튼 HTML
 function getEmptyStateHtml() {
     return `
         <div class="col-span-full py-16 px-4 text-center flex flex-col items-center">
@@ -568,21 +568,38 @@ async function updateSidebarSeaCondition() {
     container.innerHTML = await fetchAndBuildTideCardHtml(currentSelectedDate, currentObsCode, rName);
 }
 
-// 💡 신규 추가: 메인 화면 모바일 전용 날씨/물때 위젯 업데이트 함수
-async function updateMobileWeatherWidget() {
-    const regionEl = document.getElementById('mobile-weather-region');
-    if (!regionEl) return; // 메인 페이지가 아니면 실행 안 함
+// 💡 1. 누락되었던 모바일 날씨 위젯 지역 변경 함수 완벽 복구
+window.changeMobileWeatherRegion = function(val) {
+    const [code, name] = val.split('|');
+    const textEl = document.getElementById('mobile-weather-region-text');
+    if (textEl) textEl.innerText = name;
     
-    const regionName = '보령'; // 현재는 기본 지역인 보령 기준으로 설정 (추후 위치 기반으로 확장 가능)
+    const linkEl = document.getElementById('mobile-weather-windy-link');
+    if (linkEl) {
+        let rLat = 36.402, rLon = 126.483;
+        Object.values(regionGroups).forEach(group => {
+            const found = group.find(r => r.code === code);
+            if (found) { rLat = found.lat; rLon = found.lon; }
+        });
+        linkEl.setAttribute('onclick', `window.open('https://www.windy.com/?${rLat},${rLon},10', '_blank')`);
+    }
+    
+    updateMobileWeatherWidget(name, code);
+};
+
+// 💡 2. 누락되었던 모바일 날씨 실시간 연동 로직 완벽 복구
+window.updateMobileWeatherWidget = async function(regionName = '보령', regionCode = 'DT_0025') {
+    const regionEl = document.getElementById('mobile-weather-region-text');
+    if (!regionEl) return; 
+    
     const today = new Date();
     const dateStr = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
     const weatherRegion = getWeatherRegionName(regionName);
     
-    // 1. 오늘 날짜 기반으로 물때 자동 계산 (좁은 화면을 위해 '사리' 등 부가 설명은 제거)
     const tide = getTideDetail(today);
-    document.getElementById('mobile-weather-tide').innerText = tide.name.replace('(사리)', '').trim();
+    const tideEl = document.getElementById('mobile-weather-tide');
+    if (tideEl) tideEl.innerText = tide.name.replace('(사리)', '').trim();
     
-    // 2. 기상청 날씨 데이터 호출 및 연동
     try {
         const shortData = await safeFetchShortTermWeather(weatherRegion);
         const dayData = shortData.filter(d => d.date === dateStr);
@@ -601,16 +618,22 @@ async function updateMobileWeatherWidget() {
                 condText = '흐림';
             }
             
-            document.getElementById('mobile-weather-icon').className = `${wIconClass} mb-2 text-xl`;
-            document.getElementById('mobile-weather-cond').innerText = condText;
-            document.getElementById('mobile-weather-temp').innerText = `${rep.tmp}°C`;
-            document.getElementById('mobile-weather-wind').innerText = `${rep.wsd}m/s`;
-            document.getElementById('mobile-weather-wave').innerText = (rep.wav === '-' || rep.wav === '0') ? '0.5m' : `${rep.wav}m`;
+            const iconEl = document.getElementById('mobile-weather-icon');
+            const condEl = document.getElementById('mobile-weather-cond');
+            const tempEl = document.getElementById('mobile-weather-temp');
+            const windEl = document.getElementById('mobile-weather-wind');
+            const waveEl = document.getElementById('mobile-weather-wave');
+
+            if (iconEl) iconEl.className = `${wIconClass} mb-1.5 text-xl`;
+            if (condEl) condEl.innerText = condText;
+            if (tempEl) tempEl.innerText = `${rep.tmp}°C`;
+            if (windEl) windEl.innerText = `${rep.wsd}m/s`;
+            if (waveEl) waveEl.innerText = (rep.wav === '-' || rep.wav === '0') ? '0.5m' : `${rep.wav}m`;
         }
     } catch(e) {
         console.error("모바일 날씨 위젯 로딩 실패", e);
     }
-}
+};
 
 function renderRegionTabs() {
     const container = document.getElementById('regionTabs');
@@ -788,7 +811,6 @@ function renderTagButtons() {
     if(applyCount) applyCount.innerText = selectedTags.length;
 }
 
-// 💡 스와이퍼(Swiper) 구조를 갖춘 카드 렌더링 함수로 완벽 수정!
 function buildBoatCardHtml(boat, isIndexPage) {
     let availableSeats = Math.floor(Math.random() * (boat.max_guests - 1)) + 1;
 
@@ -812,20 +834,19 @@ function buildBoatCardHtml(boat, isIndexPage) {
     }
 
     const cardClass = isIndexPage ? "smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all h-full flex flex-col group relative" : "smart-link-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col group relative";
+    
+    const cleanImageUrl = boat.image_url.includes('?') ? boat.image_url : `${boat.image_url}?auto=format&fit=crop&q=80&w=800`;
     const fallbackImage = "https://images.unsplash.com/photo-1544329621-e00eb2c300ea?auto=format&fit=crop&q=80&w=800";
 
-    // 야놀자/어신 스타일의 카드 내부 다중 이미지를 위한 더미 배열
     const subImages = [
-        boat.image_url,
-        "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647",
-        "https://images.unsplash.com/photo-1583416750470-965b2707b355"
+        cleanImageUrl,
+        "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1583416750470-965b2707b355?auto=format&fit=crop&q=80&w=800"
     ];
 
     let swiperSlidesHtml = subImages.map(img => `
-        <div class="swiper-slide">
-            <img src="${img}?auto=format&fit=crop&q=80&w=800" 
-                 onerror="this.onerror=null; this.src='${fallbackImage}';" 
-                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+        <div class="swiper-slide w-full h-full">
+            <img src="${img}" onerror="this.onerror=null; this.src='${fallbackImage}';" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
         </div>
     `).join('');
 
@@ -833,9 +854,8 @@ function buildBoatCardHtml(boat, isIndexPage) {
         <div class="${cardClass}" onclick="location.href='detail.html?id=${boat.id}'" data-rating="${boat.rating}" data-price="${boat.price}" data-new="${boat.id}">
             <div class="relative ${isIndexPage ? 'h-[220px]' : 'h-[200px]'} bg-slate-100 overflow-hidden group">
                 
-                <!-- 💡 카드 내부 다중 이미지 스와이퍼 HTML 구조 추가 -->
                 <div class="swiper innerImageSwiper w-full h-full absolute inset-0 z-0">
-                    <div class="swiper-wrapper">
+                    <div class="swiper-wrapper w-full h-full">
                         ${swiperSlidesHtml}
                     </div>
                     <div class="swiper-pagination z-10" onclick="event.stopPropagation()"></div>
@@ -903,7 +923,7 @@ function buildBoatCardHtml(boat, isIndexPage) {
 }
 
 // ==========================================
-// 💡 화면 로드 시 실행 (스켈레톤 및 API 데이터 렌더링)
+// 💡 화면 로드 시 실행
 // ==========================================
 window.onload = async function() {
     const barDateEl = document.getElementById('barDate');
@@ -944,8 +964,10 @@ window.onload = async function() {
     if (typeof window.updateWishlistUI === 'function') window.updateWishlistUI();
     updateSidebarSeaCondition();
     
-    // 💡 신규 추가: 화면이 로드될 때 모바일 날씨 위젯 함수도 함께 실행
-    updateMobileWeatherWidget();
+    // 💡 3. 초기화 시 모바일 위젯 연동 함수 실행 복구
+    if (typeof window.updateMobileWeatherWidget === 'function') {
+        window.updateMobileWeatherWidget();
+    }
 
     const boatListContainerIndex = document.getElementById('boat-list-swiper-wrapper');
     const boatListContainerSearch = document.getElementById('boat-list-grid');
@@ -958,6 +980,17 @@ window.onload = async function() {
     if (boatListContainerSearch) boatListContainerSearch.innerHTML = skeletonHtmlGrid;
     if (boatListMobileGrid) boatListMobileGrid.innerHTML = skeletonHtmlGrid;
 
+    // CSS 강제 주입
+    if (!document.getElementById('card-swiper-styles')) {
+        const style = document.createElement('style');
+        style.id = 'card-swiper-styles';
+        style.innerHTML = `
+            .swiper-slide { height: auto !important; }
+            .innerImageSwiper { width: 100%; height: 100%; }
+        `;
+        document.head.appendChild(style);
+    }
+
     try {
         const res = await fetch(`${API_BASE_URL}/api/boat/list`);
         if (res.ok) {
@@ -967,36 +1000,37 @@ window.onload = async function() {
                 if (boatListContainerIndex) {
                     boatListContainerIndex.innerHTML = boats.map(boat => `<div class="swiper-slide w-[300px] md:w-[340px]">${buildBoatCardHtml(boat, true)}</div>`).join('');
                 }
-                
-                // 모바일 세로 그리드 렌더링
                 if (boatListMobileGrid) {
                     boatListMobileGrid.innerHTML = boats.map(boat => buildBoatCardHtml(boat, false)).join('');
                 }
-
-                // 통합 검색 그리드 렌더링
                 if (boatListContainerSearch) {
                     boatListContainerSearch.innerHTML = boats.map(boat => buildBoatCardHtml(boat, false)).join('');
                     const countText = document.getElementById('total-boat-count') || document.querySelector('.mb-6 p.text-[13px].font-bold.text-slate-500');
                     if(countText && countText.innerText.includes('예약 가능합니다')) countText.innerText = `총 ${boats.length}척의 낚싯배가 예약 가능합니다`;
                 }
 
-                // 💡 생성된 모든 스와이퍼(부모 + 자식) 명시적 초기화 및 업데이트
                 if (typeof Swiper !== 'undefined') {
                     const parentSwiperEl = document.querySelector('.boatSwiper');
-                    if (parentSwiperEl && parentSwiperEl.swiper) parentSwiperEl.swiper.update();
+                    if (parentSwiperEl) {
+                        if (parentSwiperEl.swiper) parentSwiperEl.swiper.destroy(true, true);
+                        new Swiper('.boatSwiper', {
+                            slidesPerView: 'auto',
+                            spaceBetween: 16,
+                            navigation: { nextEl: '.swiper-btn-next-boat', prevEl: '.swiper-btn-prev-boat' },
+                            breakpoints: { 768: { spaceBetween: 24 } }
+                        });
+                    }
                     
-                    // 내부 이미지 스와이퍼 초기화 (DOM 생성 이후 안전하게 실행되도록 setTimeout 사용)
                     setTimeout(() => {
                         new Swiper('.innerImageSwiper', {
                             loop: true,
-                            nested: true, // 가로 스크롤 충돌 방지 핵심 옵션
+                            nested: true,
                             navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
                             pagination: { el: '.swiper-pagination', clickable: true },
                         });
                     }, 100);
                 }
             } else {
-                // 💡 DB가 비었을 때 '데이터 생성' 버튼을 포함한 빈 화면 표시
                 const emptyHtml = getEmptyStateHtml();
                 if(boatListContainerIndex) boatListContainerIndex.innerHTML = emptyHtml;
                 if(boatListMobileGrid) boatListMobileGrid.innerHTML = emptyHtml;
@@ -1012,9 +1046,6 @@ window.onload = async function() {
     }
 };
 
-// ==========================================
-// 💡 3. 찜하기 API 연동 (토스트 알림 적용)
-// ==========================================
 window.updateWishlistUI = async function() {
     const token = localStorage.getItem('blueanchor_token');
     if (!token) return;
