@@ -1,22 +1,22 @@
 # ==========================================
 # 📄 routers/api_marine.py
-# 역할: 조석, 수온(해양조사원 조위관측소) 등 해양 데이터 라우팅
+# 역할: 조석, 수온, 파고 등 해양 관련 데이터 라우팅
 # ==========================================
 
 from fastapi import APIRouter
 import httpx
 import asyncio
-from core.config import API_KEY, KMA_API_KEY, REGION_MAP
+from core.config import API_KEY, KMA_API_KEY, REGION_MAP, KMA_BUOY_MAP
 from services.api_client import safe_fetch, SEMAPHORE
 
 router = APIRouter()
 
 @router.get("/realtime-marine")
 async def get_realtime_marine(obs_code: str, date_str: str):
-    # 💡 1. 불안정한 기상청 부이(kma_buoy.php) 제거
-    # 💡 2. 해양조사원(KHOA) 조위관측소 실시간 센서(tide_obs.php)로 전면 교체
-    # obs_code(예: DT_0025 보령)를 그대로 사용하여 정확도 100% 매칭!
-    url = f"https://apihub.kma.go.kr/api/typ01/url/tide_obs.php?stn={obs_code}&help=0&authKey={KMA_API_KEY}"
+    # 💡 핵심 수정: 수온 센서가 없는 항구(조위관측소) 대신, 수온 센서가 확실한 기상청 부이로 복구!
+    # KMA_BUOY_MAP을 통해 선택한 지역과 가장 가까운 부이의 코드를 찾아냅니다.
+    stn_code = KMA_BUOY_MAP.get(obs_code, '22105') # 못 찾으면 기본값(외연도 부이)
+    url = f"https://apihub.kma.go.kr/api/typ01/url/kma_buoy.php?stn={stn_code}&help=0&authKey={KMA_API_KEY}"
     
     async with httpx.AsyncClient(verify=False) as client:
         try:
@@ -48,13 +48,13 @@ async def get_realtime_marine(obs_code: str, date_str: str):
                             # 'TW'(Temperature of Water, 수온) 항목 추출
                             if 'TW' in headers_list:
                                 tw_idx = headers_list.index('TW')
+                                # 기상청 센서 오류값(-99.9 등) 완벽 필터링
                                 if tw_idx < len(data) and data[tw_idx] not in ['-99.9', '-9.9', '=', '-']: 
                                     tw_val = data[tw_idx]
                             
-                            # 파고는 프론트엔드에서 기상예보를 사용하므로 '-'로 통일
                             return {"waterTemp": tw_val, "waveHeight": "-"}
         except Exception as e: 
-            print(f"⚠️ 해양조사원 수온 API 통신 에러: {e}")
+            print(f"⚠️ 기상청 부이 수온 API 통신 에러: {e}")
             pass
             
     return {"waterTemp": "-", "waveHeight": "-"}
